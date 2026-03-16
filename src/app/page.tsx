@@ -223,7 +223,7 @@ export default function Home() {
 
       {/* FAQ Section */}
       <div className="px-4 max-w-7xl mx-auto">
-        <FAQSection limit={10} />
+        <FAQSection />
       </div>
 
       {/* Footer - Replica completa del original */}

@@ -77,13 +77,7 @@ export default function FAQSection({ limit }: FAQSectionProps) {
                     ))}
                 </div>
 
-                {limit && FAQS_GENERALES.length > limit && (
-                    <div className="text-center mt-8">
-                        <p className="text-sm text-gray-400">
-                            Y {FAQS_GENERALES.length - limit} preguntas más...
-                        </p>
-                    </div>
-                )}
+
             </div>
         </>
     );
