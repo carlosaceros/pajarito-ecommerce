@@ -30,15 +30,13 @@ export function generateIntegritySignature({
 }
 
 /**
- * Validates the signature received from Wompi Webhooks
+ * Validates the signature received from Wompi Webhooks dynamically
  */
-export function validateWebhookSignature(
-    signature: string,
-    transactionId: string,
-    status: string,
-    amountInCents: number,
-    timestamp: number | string,
-    reference: string
+export function validateWebhookDynamicSignature(
+    expectedChecksum: string,
+    properties: string[], // e.g. ["transaction.id", "transaction.status", "transaction.amount_in_cents"]
+    bodyData: any, // The body.data object
+    timestamp: number | string
 ): boolean {
     const eventsSecret = process.env.WOMPI_EVENTS_SECRET;
 
@@ -46,14 +44,32 @@ export function validateWebhookSignature(
         throw new Error('WOMPI_EVENTS_SECRET is not configured');
     }
 
-    // Wompi webhook signature formula:
-    // signature = SHA256(transactionId + status + amountInCents + timestamp + reference + eventsSecret)
-    const stringToHash = `${transactionId}${status}${amountInCents}${timestamp}${reference}${eventsSecret}`;
+    // Wompi calculates the hash by concatenating the values of the properties specified in the array
+    let concatenatedValues = '';
     
-    const expectedSignature = crypto
+    for (const propPath of properties) {
+        // Split path like 'transaction.id' to get nested values from bodyData
+        const parts = propPath.split('.');
+        let value: any = bodyData;
+        
+        for (const part of parts) {
+            if (value && value[part] !== undefined) {
+                value = value[part];
+            } else {
+                value = ''; // Fallback if missing
+                break;
+            }
+        }
+        concatenatedValues += value.toString();
+    }
+    
+    // Add timestamp and secret at the end as per Wompi docs
+    concatenatedValues += timestamp.toString() + eventsSecret;
+    
+    const computedHash = crypto
         .createHash('sha256')
-        .update(stringToHash)
+        .update(concatenatedValues)
         .digest('hex');
 
-    return signature === expectedSignature;
+    return expectedChecksum === computedHash;
 }

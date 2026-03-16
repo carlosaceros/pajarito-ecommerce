@@ -31,10 +31,14 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null;
     }
     
-    // Customers collection (future)
+    // Customers collection
     match /customers/{customerId} {
-      // Only authenticated admins
-      allow read, write: if request.auth != null;
+      // Security FIX: Prevent listing all customers (PII leak).
+      // Only allow getting a specific customer if the ID is known
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
     }
     
     // Products collection (future)

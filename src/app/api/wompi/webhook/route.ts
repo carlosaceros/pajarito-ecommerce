@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { validateWebhookSignature } from '@/lib/wompi-service';
+import { validateWebhookDynamicSignature } from '@/lib/wompi-service';
 import { updateOrderStatus } from '@/lib/orders-service';
 import { OrderStatus } from '@/types/order';
 
@@ -37,13 +37,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
         }
 
-        const isValid = validateWebhookSignature(
+        const isValid = validateWebhookDynamicSignature(
             signature.checksum,
-            transaction.id,
-            transaction.status,
-            transaction.amount_in_cents,
-            timestamp,
-            transaction.reference
+            signature.properties,
+            body.data,
+            timestamp
         );
 
         if (!isValid) {

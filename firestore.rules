@@ -14,9 +14,12 @@ service cloud.firestore {
     
     // Customers collection
     match /customers/{customerId} {
-      // Allow create/update/read if true to enable checkout and admin sync
-      // Ideally read should be restricted, but for MVP we need to be practical
-      allow read, write: if true;
+      // Security FIX: Prevent listing all customers (PII leak).
+      // Only allow getting a specific customer if the ID is known
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if true;
+      allow delete: if request.auth != null;
     }
     
     // Products collection (future)
