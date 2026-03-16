@@ -48,6 +48,22 @@ function safeToDate(timestamp: any): Date {
     return new Date();
 }
 
+/**
+ * Safely convert a Firestore value to an array.
+ * Firestore may serialize arrays as objects with numeric keys ({0: ..., 1: ...}).
+ */
+function safeToArray<T>(value: any): T[] {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'object') {
+        // Convert object with numeric keys to array
+        return Object.keys(value)
+            .sort((a, b) => Number(a) - Number(b))
+            .map(key => value[key]);
+    }
+    return [];
+}
+
 const ALL_STATUSES: OrderStatus[] = [
     'pendiente',
     'confirmado',
@@ -116,7 +132,7 @@ function OrderCard({ order, onClick, isOverlay }: OrderCardProps) {
             {/* Products Summary */}
             <div className="mb-3">
                 <p className="text-xs text-gray-500">
-                    {order.productos.length} producto{order.productos.length > 1 ? 's' : ''}
+                    {safeToArray(order.productos).length} producto{safeToArray(order.productos).length > 1 ? 's' : ''}
                 </p>
             </div>
 
@@ -397,7 +413,7 @@ export default function PedidosPage() {
                                                 Productos
                                             </h3>
                                             <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                                                {(activeOrder.productos || []).map((item, idx) => (
+                                                {safeToArray(activeOrder.productos).map((item: any, idx: number) => (
                                                     <div key={idx} className="flex gap-4">
                                                         <div className="relative w-16 h-16 bg-white rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
                                                             <Image

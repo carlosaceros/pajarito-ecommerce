@@ -250,10 +250,9 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Ayuda al Cliente</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-red-500 transition-colors">Estado de mi pedido</a></li>
-                <li><a href="#" className="hover:text-red-500 transition-colors">Cómo comprar</a></li>
-                <li><a href="#faqs" className="hover:text-red-500 transition-colors">Preguntas Frecuentes</a></li>
-                <li><a href="#" className="hover:text-red-500 transition-colors">Contáctanos</a></li>
+                <li><a href="/como-comprar" className="hover:text-red-500 transition-colors">Cómo comprar</a></li>
+                <li><a href="/#faqs" className="hover:text-red-500 transition-colors">Preguntas Frecuentes</a></li>
+                <li><a href="https://wa.me/57300XXXXXXX" target="_blank" rel="noopener noreferrer" className="hover:text-red-500 transition-colors">Contáctanos</a></li>
               </ul>
             </div>
 
@@ -261,10 +260,10 @@ export default function Home() {
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Políticas</h4>
               <ul className="space-y-3 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-red-500 transition-colors">Política de Envíos</a></li>
-                <li><a href="#" className="hover:text-red-500 transition-colors">Política de Devolución</a></li>
-                <li><a href="#" className="hover:text-red-500 transition-colors">Garantías BioCambio</a></li>
-                <li><a href="#" className="hover:text-red-500 transition-colors">Tratamiento de Datos</a></li>
+                <li><a href="/politica-envios" className="hover:text-red-500 transition-colors">Política de Envíos</a></li>
+                <li><a href="/politica-devolucion" className="hover:text-red-500 transition-colors">Política de Devolución</a></li>
+                <li><a href="/garantias" className="hover:text-red-500 transition-colors">Garantías BioCambio</a></li>
+                <li><a href="/privacidad" className="hover:text-red-500 transition-colors">Tratamiento de Datos</a></li>
               </ul>
             </div>
 
@@ -292,8 +291,8 @@ export default function Home() {
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
             <p>© 2026 BioCambio 360 S.A.S. Todos los derechos reservados.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-gray-300 transition-colors">Términos y Condiciones</a>
-              <a href="#" className="hover:text-gray-300 transition-colors">Política de Privacidad</a>
+              <a href="/terminos" className="hover:text-gray-300 transition-colors">Términos y Condiciones</a>
+              <a href="/privacidad" className="hover:text-gray-300 transition-colors">Política de Privacidad</a>
               <a href="#" className="text-gray-700 hover:text-gray-400 transition-colors font-bold uppercase tracking-widest text-[10px]">
                 Acceso Admin
               </a>
