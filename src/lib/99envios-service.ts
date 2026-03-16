@@ -49,7 +49,7 @@ async function getAuthToken(): Promise<string> {
     // Set expiration to 55 minutes from now to be safe (assuming 1 hour expiration standard)
     tokenExpirationTime = Date.now() + (55 * 60 * 1000);
 
-    return cachedToken;
+    return cachedToken as string;
 }
 
 export interface QuoteRequest {
