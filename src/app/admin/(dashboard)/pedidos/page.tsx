@@ -397,7 +397,7 @@ export default function PedidosPage() {
                                                 Productos
                                             </h3>
                                             <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                                                {activeOrder.productos.map((item, idx) => (
+                                                {(activeOrder.productos || []).map((item, idx) => (
                                                     <div key={idx} className="flex gap-4">
                                                         <div className="relative w-16 h-16 bg-white rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
                                                             <Image
