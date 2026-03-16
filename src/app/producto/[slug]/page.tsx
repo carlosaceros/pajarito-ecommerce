@@ -6,6 +6,7 @@ import {
     generateProductMetadata,
     generateProductSchema,
     generateBreadcrumbSchema,
+    generateFAQSchema,
     getRelatedProducts
 } from '@/lib/product-utils';
 import ProductPageContent from '@/components/ProductPageContent';
@@ -47,6 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     const relatedProducts = await getRelatedProducts(product.id, 3);
     const productSchema = generateProductSchema(product);
     const breadcrumbSchema = generateBreadcrumbSchema(product);
+    const faqSchema = generateFAQSchema(product);
 
     return (
         <>
@@ -61,6 +63,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
             />
+
+            {/* Schema.org FAQ JSON-LD — Enables rich FAQ snippets in Google */}
+            {faqSchema && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+                />
+            )}
 
             <ProductPageContent product={product} relatedProducts={relatedProducts} />
         </>

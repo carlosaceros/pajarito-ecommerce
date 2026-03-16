@@ -2,6 +2,8 @@ import { Product } from './products';
 import { getAllProducts } from './products-service';
 import { Metadata } from 'next';
 
+const BASE_URL = 'https://www.productospajarito.com';
+
 /**
  * Generate SEO-friendly slug from product name
  * Example: "Detergente Ropa" -> "detergente-ropa-industrial"
@@ -45,16 +47,19 @@ export async function getAllProductSlugs(): Promise<string[]> {
 
 /**
  * Generate metadata for product page (Next.js 16 Metadata API)
+ * metadataBase is set in layout.tsx so all relative paths resolve correctly.
  */
 export function generateProductMetadata(product: Product, size?: string): Metadata {
     const slug = generateProductSlug(product.id, product.nombre);
     const selectedSize = size || '10L';
     const price = product.precios[selectedSize as keyof typeof product.precios];
-    const pricePerMl = (price / parseFloat(selectedSize.replace('L', '')) / 1000).toFixed(2);
+    const priceNum = parseFloat(selectedSize.replace('L', ''));
+    const pricePerMl = (price / priceNum / 1000).toFixed(2);
 
     // SEO-optimized title with long-tail keywords
     const title = `${product.nombre} ${selectedSize} Industrial - $${price.toLocaleString('es-CO')} | Pajarito`;
-    const description = `${product.descripcion} • Precio x mililitro: $${pricePerMl}/ml • ${product.slogan} • Calidad industrial BioCambio 360 • Envíos toda Colombia con 99Envíos.`;
+    const description = `Compra ${product.nombre} ${selectedSize} industrial a $${price.toLocaleString('es-CO')}. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia BioCambio 360.`;
+    const absoluteImageUrl = `${BASE_URL}/images/${product.imgFile.replace(/%20/g, ' ')}`;
 
     return {
         title,
@@ -63,6 +68,8 @@ export function generateProductMetadata(product: Product, size?: string): Metada
             product.nombre.toLowerCase(),
             `${product.nombre.toLowerCase()} industrial`,
             `${product.nombre.toLowerCase()} ${selectedSize}`,
+            `${product.nombre.toLowerCase()} granel`,
+            `${product.nombre.toLowerCase()} por mayor`,
             'aseo granel colombia',
             'productos limpieza por mayor',
             'biocambio 360',
@@ -73,22 +80,24 @@ export function generateProductMetadata(product: Product, size?: string): Metada
         openGraph: {
             title,
             description,
+            type: 'website',
+            locale: 'es_CO',
+            url: `${BASE_URL}/producto/${slug}`,
+            siteName: 'Pajarito - Aseo Industrial',
             images: [
                 {
-                    url: `/images/${product.imgFile}`,
+                    url: absoluteImageUrl,
                     width: 800,
                     height: 800,
-                    alt: `${product.nombre} ${selectedSize} Industrial - Pajarito`
+                    alt: `${product.nombre} ${selectedSize} Industrial - Pajarito BioCambio 360`
                 }
-            ],
-            locale: 'es_CO',
-            siteName: 'Pajarito - Aseo Industrial'
+            ]
         },
         twitter: {
             card: 'summary_large_image',
             title,
             description,
-            images: [`/images/${product.imgFile}`]
+            images: [absoluteImageUrl]
         },
         alternates: {
             canonical: `/producto/${slug}`
@@ -108,39 +117,27 @@ export function generateProductMetadata(product: Product, size?: string): Metada
 
 /**
  * Generate Product Schema (Schema.org Product)
+ * Includes an Offers array with ALL 3 size variants for Google Shopping.
+ * NOTE: aggregateRating removed — never fake ratings, Google penalizes this.
  */
 export function generateProductSchema(product: Product, size: string = '10L') {
     const slug = generateProductSlug(product.id, product.nombre);
-    const price = product.precios[size as keyof typeof product.precios];
+    const absoluteImageUrl = `${BASE_URL}/images/${product.imgFile.replace(/%20/g, ' ')}`;
 
-    return {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "name": `${product.nombre} ${size} Industrial`,
-        "description": product.descripcion,
-        "image": `/images/${product.imgFile}`,
-        "brand": {
-            "@type": "Brand",
-            "name": "Pajarito",
-            "manufacturer": {
-                "@type": "Organization",
-                "name": "BioCambio 360 S.A.S.",
-                "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": "Cra. 7C #44-17 Sur",
-                    "addressLocality": "Soacha",
-                    "addressRegion": "Cundinamarca",
-                    "addressCountry": "CO"
-                }
-            }
-        },
-        "offers": {
+    // Build one Offer per size variant (better for Google Shopping)
+    const sizes: Array<'3.8L' | '10L' | '20L'> = ['3.8L', '10L', '20L'];
+    const offers = sizes.map((s) => {
+        const price = product.precios[s];
+        return {
             "@type": "Offer",
-            "url": `https://pajarito.com/producto/${slug}`,
+            "url": `${BASE_URL}/producto/${slug}`,
             "priceCurrency": "COP",
             "price": price,
             "priceValidUntil": "2026-12-31",
             "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition",
+            "name": `${product.nombre} ${s}`,
+            "sku": `${product.id.toUpperCase()}-${s.replace('.', '_')}`,
             "seller": {
                 "@type": "Organization",
                 "name": "BioCambio 360 S.A.S."
@@ -151,6 +148,15 @@ export function generateProductSchema(product: Product, size: string = '10L') {
                     "@type": "MonetaryAmount",
                     "value": "12000",
                     "currency": "COP"
+                },
+                "freeShippingThreshold": {
+                    "@type": "MonetaryAmount",
+                    "value": "100000",
+                    "currency": "COP"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "CO"
                 },
                 "deliveryTime": {
                     "@type": "ShippingDeliveryTime",
@@ -167,15 +173,64 @@ export function generateProductSchema(product: Product, size: string = '10L') {
                         "unitCode": "DAY"
                     }
                 }
+            },
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "CO",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchantReturnDays": 15,
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/FreeReturn"
+            }
+        };
+    });
+
+    return {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": `${product.nombre} Industrial`,
+        "description": product.descripcion,
+        "image": absoluteImageUrl,
+        "brand": {
+            "@type": "Brand",
+            "name": "Pajarito"
+        },
+        "manufacturer": {
+            "@type": "Organization",
+            "name": "BioCambio 360 S.A.S.",
+            "url": BASE_URL,
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Cra. 7C #44-17 Sur",
+                "addressLocality": "Soacha",
+                "addressRegion": "Cundinamarca",
+                "postalCode": "250001",
+                "addressCountry": "CO"
             }
         },
         "sku": product.id.toUpperCase(),
         "category": "Productos de Limpieza Industrial",
-        "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "reviewCount": "127"
-        }
+        "offers": offers,
+    };
+}
+
+/**
+ * Generate FAQ Schema for product page
+ */
+export function generateFAQSchema(product: Product) {
+    if (!product.faqs || product.faqs.length === 0) return null;
+
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": product.faqs.map((faq) => ({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.a
+            }
+        }))
     };
 }
 
@@ -193,19 +248,19 @@ export function generateBreadcrumbSchema(product: Product) {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Inicio",
-                "item": "https://pajarito.com"
+                "item": BASE_URL
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Productos",
-                "item": "https://pajarito.com/#catalogo"
+                "item": `${BASE_URL}/#catalogo`
             },
             {
                 "@type": "ListItem",
                 "position": 3,
                 "name": product.nombre,
-                "item": `https://pajarito.com/producto/${slug}`
+                "item": `${BASE_URL}/producto/${slug}`
             }
         ]
     };
