@@ -154,24 +154,31 @@ export default function CheckoutPage() {
 
             const orderId = await createOrder(orderData);
 
-            // Fire & forget: send push + emails (non-blocking, never fails checkout)
-            // keepalive: true ensures the request survives page navigation
-            fetch('/api/notifications/new-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId,
-                    customerName: formData.nombre,
-                    customerEmail: formData.email || null,
-                    total,
-                    metodoPago: paymentMethod,
-                    ciudad: formData.ciudad,
-                    productos: cart,
-                    subtotal,
-                    envio: shippingCost,
-                }),
-                keepalive: true, // Browser keeps request alive even after navigation
-            }).catch(() => {});
+            // Send push + email notifications — await to ensure request reaches server before navigation
+            try {
+                await fetch('/api/notifications/new-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId,
+                        customerName: formData.nombre,
+                        customerEmail: formData.email || null,
+                        total,
+                        metodoPago: paymentMethod,
+                        ciudad: formData.ciudad,
+                        productos: cart.map(item => ({
+                            product: { nombre: item.product.nombre },
+                            size: item.size,
+                            cantidad: item.cantidad,
+                            price: item.price,
+                        })),
+                        subtotal,
+                        envio: shippingCost,
+                    }),
+                });
+            } catch (e) {
+                console.warn('[Checkout] Notification call failed (non-fatal):', e);
+            }
 
             // Store order ID in sessionStorage for confirmation page
             sessionStorage.setItem(`order_${orderId}`, JSON.stringify(orderData));
