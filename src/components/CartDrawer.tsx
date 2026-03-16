@@ -5,9 +5,17 @@ import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/products';
+import { Truck, Sparkles } from 'lucide-react';
+
+const FREE_SHIPPING_THRESHOLD = 100000;
 
 export default function CartDrawer() {
-    const { cart, removeFromCart, updateQuantity, getTotalPrice, isCartOpen, setIsCartOpen } = useCart();
+    const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalSavings, isCartOpen, setIsCartOpen } = useCart();
+
+    const totalPrice = getTotalPrice();
+    const totalSavings = getTotalSavings();
+    const progress = Math.min((totalPrice / FREE_SHIPPING_THRESHOLD) * 100, 100);
+    const amountToFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice;
 
     return (
         <AnimatePresence>
@@ -49,6 +57,32 @@ export default function CartDrawer() {
                                 <X size={24} className="text-gray-400 hover:text-red-600" />
                             </motion.button>
                         </div>
+
+                        {/* Free Shipping Progress Bar */}
+                        {cart.length > 0 && (
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Truck size={18} className={progress >= 100 ? "text-green-600" : "text-gray-500"} />
+                                    <p className="text-sm font-bold text-gray-800">
+                                        {progress >= 100 ? (
+                                            <span className="text-green-600 flex items-center gap-1">
+                                                ¡Felicidades! Tienes envío GRATIS 🎉
+                                            </span>
+                                        ) : (
+                                            <span>Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para envío GRATIS</span>
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                                    <motion.div 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${progress}%` }}
+                                        transition={{ duration: 0.5, ease: "easeOut" }}
+                                        className={`h-full rounded-full ${progress >= 100 ? 'bg-green-500' : 'bg-red-500'}`}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         {/* Cart Items */}
                         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -181,16 +215,33 @@ export default function CartDrawer() {
                                 transition={{ type: "spring", damping: 20, stiffness: 300 }}
                                 className="border-t-2 bg-gradient-to-r from-gray-50 to-white p-6 space-y-4 shadow-2xl"
                             >
+                                {totalSavings > 0 && (
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                                        <div className="flex items-center gap-2 text-green-800">
+                                            <Sparkles size={18} className="text-green-600" />
+                                            <span className="font-bold text-sm">Ahorro total estimado:</span>
+                                        </div>
+                                        <motion.span
+                                            key={totalSavings}
+                                            initial={{ scale: 1.2, color: '#16a34a' }}
+                                            animate={{ scale: 1, color: '#166534' }}
+                                            className="font-black text-green-700"
+                                        >
+                                            {formatCurrency(totalSavings)}
+                                        </motion.span>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between items-center">
-                                    <span className="font-bold text-gray-600 text-lg">Total:</span>
+                                    <span className="font-bold text-gray-600 text-lg">Total a pagar:</span>
                                     <motion.span
-                                        key={getTotalPrice()}
+                                        key={totalPrice}
                                         initial={{ scale: 1.3, color: '#dc2626' }}
                                         animate={{ scale: 1, color: '#111827' }}
                                         className="font-black text-3xl"
                                         style={{ fontFamily: '"Archivo Black", sans-serif' }}
                                     >
-                                        {formatCurrency(getTotalPrice())}
+                                        {formatCurrency(totalPrice)}
                                     </motion.span>
                                 </div>
                                 <Link href="/checkout">
@@ -205,7 +256,7 @@ export default function CartDrawer() {
                                     </motion.button>
                                 </Link>
                                 <p className="text-xs text-gray-400 text-center">
-                                    Envío calculado en el siguiente paso
+                                    {progress >= 100 ? '¡El envío a toda Colombia es GRATIS para este pedido!' : 'El costo de envío se calculará en el siguiente paso'}
                                 </p>
                             </motion.div>
                         )}

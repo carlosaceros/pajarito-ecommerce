@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from './products';
+import { calcularAhorro } from './products';
 
 export interface CartItem {
     product: Product;
@@ -18,6 +19,7 @@ interface CartContextType {
     clearCart: () => void;
     getTotalItems: () => number;
     getTotalPrice: () => number;
+    getTotalSavings: () => number;
     isCartOpen: boolean;
     setIsCartOpen: (open: boolean) => void;
 }
@@ -100,6 +102,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return cart.reduce((total, item) => total + (item.price * item.cantidad), 0);
     };
 
+    const getTotalSavings = () => {
+        return cart.reduce((total, item) => {
+            const competidorPrecio = item.product.competidorPromedio?.[item.size] || 0;
+            const savingsData = calcularAhorro(item.price, item.size, competidorPrecio);
+            if (savingsData && savingsData.ahorroDinero > 0) {
+                return total + (savingsData.ahorroDinero * item.cantidad);
+            }
+            return total;
+        }, 0);
+    };
+
     return (
         <CartContext.Provider
             value={{
@@ -110,6 +123,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 clearCart,
                 getTotalItems,
                 getTotalPrice,
+                getTotalSavings,
                 isCartOpen,
                 setIsCartOpen,
             }}
