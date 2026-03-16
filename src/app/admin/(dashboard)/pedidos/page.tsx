@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { subscribeToOrders, updateOrderStatus } from '@/lib/orders-service';
-import { Order, OrderStatus, ORDER_STATUS_CONFIG } from '@/types/order';
+import { Order, OrderStatus, ORDER_STATUS_CONFIG, TimelineEvent } from '@/types/order';
 import { formatCurrency } from '@/lib/checkout-utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -520,20 +520,23 @@ export default function PedidosPage() {
                                                 Historial
                                             </h3>
                                             <div className="relative pl-4 border-l-2 border-gray-100 space-y-4">
-                                                {activeOrder.timeline?.map((event, idx) => (
-                                                    <div key={idx} className="relative">
-                                                        <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${ORDER_STATUS_CONFIG[event.status].bgColor} border-2 border-white ring-1 ring-gray-200`} />
-                                                        <p className="text-sm font-bold text-gray-900">{ORDER_STATUS_CONFIG[event.status].label}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {format(safeToDate(event.timestamp), "d MMM, HH:mm", { locale: es })}
-                                                        </p>
-                                                        {event.note && (
-                                                            <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
-                                                                {event.note}
+                                                {safeToArray<TimelineEvent>(activeOrder.timeline).map((event: TimelineEvent, idx: number) => {
+                                                    const statusKey = event.status as OrderStatus;
+                                                    return (
+                                                        <div key={idx} className="relative">
+                                                            <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${ORDER_STATUS_CONFIG[statusKey].bgColor} border-2 border-white ring-1 ring-gray-200`} />
+                                                            <p className="text-sm font-bold text-gray-900">{ORDER_STATUS_CONFIG[statusKey].label}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {format(safeToDate(event.timestamp), "d MMM, HH:mm", { locale: es })}
                                                             </p>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                            {event.note && (
+                                                                <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                                                    {event.note}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     </div>
