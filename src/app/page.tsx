@@ -2,19 +2,36 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import FAQSection from '@/components/FAQSection';
 import CartDrawer from '@/components/CartDrawer';
 import Toast from '@/components/Toast';
 import HeaderMessage from '@/components/HeaderMessage';
-import { PRODUCTOS } from '@/lib/products';
+import { Product } from '@/lib/products';
+import { getAllProducts } from '@/lib/products-service';
 import { useCart } from '@/lib/cart-context';
 
 export default function Home() {
   const { addToCart, setIsCartOpen, getTotalItems } = useCart();
   const [showToast, setShowToast] = useState(false);
   const [toastData, setToastData] = useState({ name: '', size: '' });
+  const [productos, setProductos] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+        setProductos(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleAddToCart = (product: any, size: string, price: number, cantidad: number) => {
     addToCart(product, size as '3.8L' | '10L' | '20L', price, cantidad);
@@ -140,13 +157,20 @@ export default function Home() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 max-w-7xl mx-auto mb-20">
-        {PRODUCTOS.map((producto) => (
-          <ProductCard
-            key={producto.id}
-            product={producto}
-            onAddToCart={handleAddToCart}
-          />
-        ))}
+        {isLoadingProducts ? (
+            <div className="col-span-full py-20 text-center text-gray-500 font-bold flex flex-col items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mb-4"></div>
+                Cargando catálogo...
+            </div>
+        ) : (
+            productos.map((producto) => (
+              <ProductCard
+                key={producto.id}
+                product={producto}
+                onAddToCart={handleAddToCart}
+              />
+            ))
+        )}
       </div>
 
       {/* Trust Section - Replica del original */}

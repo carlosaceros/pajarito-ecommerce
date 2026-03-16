@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
     TrendingUp,
@@ -12,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import { subscribeToOrders } from '@/lib/orders-service';
+import { Order, OrderStatus } from '@/types/order';
 
 export default function AdminDashboard() {
     const { user, signOut } = useAuth();
@@ -22,27 +25,103 @@ export default function AdminDashboard() {
         router.push('/admin/login');
     };
 
-    // Mock data - will be replaced with real Firestore data
-    const stats = {
-        today: {
-            sales: 850000,
-            orders: 23,
-            change: '+15%'
-        },
-        month: {
-            sales: 12500000,
-            orders: 347,
-            change: '+22%'
-        },
-        metrics: {
-            avgTicket: 36900,
-            avgTicketChange: '+8%',
-            conversion: 4.2,
-            conversionChange: '+0.5%',
-            ltv: 124000,
-            ltvChange: '+12%'
-        }
+    const [orders, setOrders] = useState<(Order & { id: string })[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeToOrders((fetchedOrders) => {
+            setOrders(fetchedOrders);
+        });
+        return unsubscribe;
+    }, []);
+
+    // Helper to safely convert firestore timestamps
+    const safeToDate = (timestamp: any): Date => {
+        if (!timestamp) return new Date();
+        if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+        if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+        if (typeof timestamp === 'string' || typeof timestamp === 'number') return new Date(timestamp);
+        return new Date();
     };
+
+    const isToday = (date: Date) => {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+    };
+
+    const isThisMonth = (date: Date) => {
+        const today = new Date();
+        return date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear();
+    };
+
+    // Calculate dynamic stats
+    const calculateStats = () => {
+        let todaySales = 0;
+        let todayOrdersCount = 0;
+        let monthSales = 0;
+        let monthOrdersCount = 0;
+        
+        const statusCounts: Record<OrderStatus, number> = {
+            pendiente: 0,
+            confirmado: 0,
+            enviado: 0,
+            en_camino: 0,
+            entregado: 0,
+            preparacion: 0,
+            cancelado: 0
+        };
+
+        orders.forEach(order => {
+            const orderDate = safeToDate(order.createdAt);
+            
+            // Only count non-cancelled orders for sales metrics
+            if (order.status !== 'cancelado') {
+                if (isToday(orderDate)) {
+                    todaySales += order.total;
+                    todayOrdersCount++;
+                }
+                
+                if (isThisMonth(orderDate)) {
+                    monthSales += order.total;
+                    monthOrdersCount++;
+                }
+            }
+
+            // Count pipelines
+            if (statusCounts[order.status] !== undefined) {
+                statusCounts[order.status]++;
+            }
+        });
+
+        // Avg Ticket calculation (this month)
+        const avgTicket = monthOrdersCount > 0 ? (monthSales / monthOrdersCount) : 0;
+        
+        return {
+            today: {
+                sales: todaySales,
+                orders: todayOrdersCount,
+                change: '+0%'
+            },
+            month: {
+                sales: monthSales,
+                orders: monthOrdersCount,
+                change: '+0%'
+            },
+            metrics: {
+                avgTicket: avgTicket,
+                avgTicketChange: '+0%',
+                conversion: 4.2, // Need traffic data for true conversion
+                conversionChange: '+0%',
+                ltv: 124000, // Complex metric, keeping mock for now
+                ltvChange: '+0%'
+            },
+            pipeline: statusCounts
+        };
+    };
+
+    const stats = calculateStats();
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('es-CO', {
@@ -203,31 +282,39 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                             <div className="text-center">
                                 <div className="bg-yellow-100 text-yellow-700 rounded-lg py-3 px-4 mb-2">
-                                    <p className="text-2xl font-black">5</p>
+                                    <p className="text-2xl font-black">{stats.pipeline.pendiente}</p>
                                 </div>
                                 <p className="text-xs text-gray-600 font-medium">Pendiente</p>
                             </div>
-                            <div className="text-center">
-                                <div className="bg-blue-100 text-blue-700 rounded-lg py-3 px-4 mb-2">
-                                    <p className="text-2xl font-black">12</p>
+                            <div className="text-center flex gap-1 justify-center">
+                                <div className="text-center">
+                                    <div className="bg-blue-100 text-blue-700 rounded-lg py-3 px-4 mb-2">
+                                        <p className="text-2xl font-black">{stats.pipeline.confirmado}</p>
+                                    </div>
+                                    <p className="text-xs text-gray-600 font-medium w-full truncate">Confir.</p>
                                 </div>
-                                <p className="text-xs text-gray-600 font-medium">Confirmado</p>
+                                <div className="text-center">
+                                    <div className="bg-indigo-100 text-indigo-700 rounded-lg py-3 px-4 mb-2">
+                                        <p className="text-2xl font-black">{stats.pipeline.preparacion}</p>
+                                    </div>
+                                    <p className="text-xs text-gray-600 font-medium w-full truncate">Prep.</p>
+                                </div>
                             </div>
                             <div className="text-center">
                                 <div className="bg-purple-100 text-purple-700 rounded-lg py-3 px-4 mb-2">
-                                    <p className="text-2xl font-black">8</p>
+                                    <p className="text-2xl font-black">{stats.pipeline.enviado}</p>
                                 </div>
                                 <p className="text-xs text-gray-600 font-medium">Enviado</p>
                             </div>
                             <div className="text-center">
                                 <div className="bg-orange-100 text-orange-700 rounded-lg py-3 px-4 mb-2">
-                                    <p className="text-2xl font-black">15</p>
+                                    <p className="text-2xl font-black">{stats.pipeline.en_camino}</p>
                                 </div>
                                 <p className="text-xs text-gray-600 font-medium">En Camino</p>
                             </div>
                             <div className="text-center">
                                 <div className="bg-green-100 text-green-700 rounded-lg py-3 px-4 mb-2">
-                                    <p className="text-2xl font-black">234</p>
+                                    <p className="text-2xl font-black">{stats.pipeline.entregado}</p>
                                 </div>
                                 <p className="text-xs text-gray-600 font-medium">Entregado</p>
                             </div>
@@ -248,6 +335,17 @@ export default function AdminDashboard() {
                             <Package className="text-red-600 mb-3" size={24} />
                             <p className="font-black text-gray-900 mb-1">Gestionar Pedidos</p>
                             <p className="text-xs text-gray-600">Ver y actualizar estados</p>
+                        </motion.button>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => router.push('/admin/productos')}
+                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-red-200 transition-colors"
+                        >
+                            <Package className="text-purple-600 mb-3" size={24} />
+                            <p className="font-black text-gray-900 mb-1">Inventario</p>
+                            <p className="text-xs text-gray-600">Catálogo de productos</p>
                         </motion.button>
 
                         <motion.button

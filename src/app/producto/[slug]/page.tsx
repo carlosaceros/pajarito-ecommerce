@@ -10,9 +10,12 @@ import {
 } from '@/lib/product-utils';
 import ProductPageContent from '@/components/ProductPageContent';
 
+// ISR: Revalidate the page every 60 seconds to pull new products
+export const revalidate = 60;
+
 // SSG: Generate static pages for all products
 export async function generateStaticParams() {
-    const slugs = getAllProductSlugs();
+    const slugs = await getAllProductSlugs();
     return slugs.map((slug) => ({
         slug,
     }));
@@ -21,7 +24,7 @@ export async function generateStaticParams() {
 // SEO: Generate dynamic metadata per product
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
-    const product = getProductBySlug(slug);
+    const product = await getProductBySlug(slug);
 
     if (!product) {
         return {
@@ -35,13 +38,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const product = getProductBySlug(slug);
+    const product = await getProductBySlug(slug);
 
     if (!product) {
         notFound();
     }
 
-    const relatedProducts = getRelatedProducts(product.id, 3);
+    const relatedProducts = await getRelatedProducts(product.id, 3);
     const productSchema = generateProductSchema(product);
     const breadcrumbSchema = generateBreadcrumbSchema(product);
 

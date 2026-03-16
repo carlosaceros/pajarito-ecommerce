@@ -1,4 +1,5 @@
-import { Product, PRODUCTOS } from './products';
+import { Product } from './products';
+import { getAllProducts } from './products-service';
 import { Metadata } from 'next';
 
 /**
@@ -29,15 +30,17 @@ export function generateProductSlug(id: string, nombre: string): string {
 /**
  * Get product by slug
  */
-export function getProductBySlug(slug: string): Product | null {
-    return PRODUCTOS.find(p => generateProductSlug(p.id, p.nombre) === slug) || null;
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+    const products = await getAllProducts();
+    return products.find(p => generateProductSlug(p.id, p.nombre) === slug) || null;
 }
 
 /**
  * Get all product slugs for SSG
  */
-export function getAllProductSlugs(): string[] {
-    return PRODUCTOS.map(p => generateProductSlug(p.id, p.nombre));
+export async function getAllProductSlugs(): Promise<string[]> {
+    const products = await getAllProducts();
+    return products.map(p => generateProductSlug(p.id, p.nombre));
 }
 
 /**
@@ -211,8 +214,9 @@ export function generateBreadcrumbSchema(product: Product) {
 /**
  * Get related products based on simple logic
  */
-export function getRelatedProducts(currentProductId: string, limit: number = 3): Product[] {
-    return PRODUCTOS
+export async function getRelatedProducts(currentProductId: string, limit: number = 3): Promise<Product[]> {
+    const products = await getAllProducts();
+    return products
         .filter(p => p.id !== currentProductId)
         .slice(0, limit);
 }
