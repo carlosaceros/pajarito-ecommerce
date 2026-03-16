@@ -109,23 +109,36 @@ export const PRODUCTOS: Product[] = [
 export interface SavingsData {
     nuestroPrecioML: string;
     ahorroPorcentaje: number;
+    ahorroDinero: number;
     mostrarFOMO: boolean;
 }
 
 export const calcularAhorro = (
     precioNuestro: number,
     volumen: string,
-    competidorPrecioPorLitro: number
+    competidorPrecioAbsoluto: number
 ): SavingsData => {
     const litros = parseFloat(volumen);
     const nuestroPrecioML = precioNuestro / (litros * 1000);
-    const competidorPrecioML = competidorPrecioPorLitro / 1000;
-    const ahorroPorcentaje = ((competidorPrecioML - nuestroPrecioML) / competidorPrecioML) * 100;
+    
+    // Safety check in case the competitor price is missing or 0
+    if (!competidorPrecioAbsoluto || competidorPrecioAbsoluto <= precioNuestro) {
+        return {
+            nuestroPrecioML: nuestroPrecioML.toFixed(2),
+            ahorroPorcentaje: 0,
+            ahorroDinero: 0,
+            mostrarFOMO: false
+        };
+    }
+
+    const ahorroDinero = competidorPrecioAbsoluto - precioNuestro;
+    const ahorroPorcentaje = (ahorroDinero / competidorPrecioAbsoluto) * 100;
 
     return {
         nuestroPrecioML: nuestroPrecioML.toFixed(2),
         ahorroPorcentaje: Math.round(ahorroPorcentaje),
-        mostrarFOMO: ahorroPorcentaje > 15
+        ahorroDinero: Math.round(ahorroDinero),
+        mostrarFOMO: ahorroDinero > 0
     };
 };
 

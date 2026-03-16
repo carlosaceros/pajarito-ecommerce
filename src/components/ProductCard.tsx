@@ -144,7 +144,7 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
                                 animate={{ opacity: 1, x: 0 }}
                                 className="text-[9px] font-black text-green-600 mt-1 flex items-center gap-1"
                             >
-                                📉 Ahorras {savingsData.ahorroPorcentaje}% vs Otras Marcas
+                                📉 Ahorras {formatCurrency(savingsData.ahorroDinero)} ({savingsData.ahorroPorcentaje}%)
                             </motion.span>
                         )}
                     </div>

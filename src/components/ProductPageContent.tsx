@@ -176,7 +176,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                     {savingsData.mostrarFOMO && (
                                         <div className="mt-3 pt-3 border-t border-gray-200">
                                             <span className="text-sm font-black text-green-600 flex items-center gap-2">
-                                                📉 Ahorras {savingsData.ahorroPorcentaje}% vs otras marcas
+                                                📉 Ahorras {formatCurrency(savingsData.ahorroDinero)} ({savingsData.ahorroPorcentaje}%) vs otras marcas
                                             </span>
                                         </div>
                                     )}
