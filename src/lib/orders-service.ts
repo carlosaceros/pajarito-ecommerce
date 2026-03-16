@@ -15,8 +15,21 @@ import { db } from './firebase';
 import { upsertCustomerFromOrder } from './customers-service';
 
 import { Order, OrderStatus, TimelineEvent } from '@/types/order';
+
 // Collection reference
 const ordersCollection = collection(db, 'orders');
+
+/**
+ * Recursively removes undefined values from an object so Firestore doesn't reject the document.
+ */
+function removeUndefined<T>(obj: T): T {
+    if (obj === null || typeof obj !== 'object') return obj;
+    return Object.fromEntries(
+        Object.entries(obj as Record<string, unknown>)
+            .filter(([, v]) => v !== undefined)
+            .map(([k, v]) => [k, typeof v === 'object' && v !== null ? removeUndefined(v) : v])
+    ) as T;
+}
 
 /**
  * Create a new order in Firestore
@@ -24,7 +37,7 @@ const ordersCollection = collection(db, 'orders');
 export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'timeline'>): Promise<string> {
     const now = Timestamp.now();
 
-    const order = {
+    const order = removeUndefined({
         ...orderData,
         timeline: [{
             status: orderData.status,
@@ -33,7 +46,7 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'u
         }] as TimelineEvent[],
         createdAt: now,
         updatedAt: now
-    };
+    });
 
     const docRef = await addDoc(ordersCollection, order);
 
