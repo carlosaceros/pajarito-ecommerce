@@ -159,5 +159,47 @@ export const FAQS_GENERALES: FAQItem[] = [
         question: "¿Puedo devolver un producto si no me gustó?",
         answer: "Sí, dentro de los primeros 7 días calendario si el envase está sellado (más del 90% lleno). Costo de envío de vuelta corre por tu cuenta. Reembolso 100% del valor del producto en 5-10 días hábiles.",
         category: 'compra'
+    },
+
+    // Categoría: Informacional SEO / AEO (8 preguntas)
+    {
+        question: "¿Qué es un desengrasante industrial y para qué sirve?",
+        answer: "Un desengrasante industrial es una fórmula química de alta concentración diseñada para disolver grasas pesadas, aceites de motor, cochambre y suciedad extrema. A diferencia de los limpiadores domésticos, penetra superficies porosas y equipos de acero inoxidable o aluminio sin requerir esfuerzo mecánico excesivo.",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Cómo limpiar pisos muy sucios o con manchas de grasa?",
+        answer: "Para limpiar pisos muy sucios, lo ideal es usar un desengrasante alcalino. Diluye 100ml de nuestro desengrasante industrial en 5 litros de agua. Aplica sobre el piso, deja actuar por 5 a 10 minutos para que saponifique la grasa, cepilla suavemente y enjuaga con agua limpia. Evita mezclar con cloro.",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Cuál es la diferencia entre un detergente industrial y uno doméstico?",
+        answer: "La principal diferencia radica en la concentración de materia activa (tensoactivos). Un detergente industrial requiere mucha menos cantidad por lavada y está formulado para remover suciedad pesada (grasa mecánica, fluidos corporales en hospitales, mantelería de restaurantes) sin generar exceso de espuma que dañe la maquinaria.",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Por qué mi lavadora huele mal y cómo eliminar el mal olor?",
+        answer: "El mal olor en las lavadoras se debe a la acumulación de bacterias, sarro y restos de exceso de espuma de detergentes de baja calidad. Para solucionarlo, haz un ciclo de lavado en vacío con agua caliente y 250ml de blanqueador desinfectante. Prevén esto usando detergentes Low Foam (Baja espuma).",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Qué significa que un producto de aseo tenga pH alcalino?",
+        answer: "El pH mide la acidez o alcalinidad. Los limpiadores con pH alcalino (entre 9 y 14) son excelentes para romper cadenas de grasa, eliminar aceites y proteínas. Son ideales para cocinas, talleres e industrias. Por otro lado, los limpiadores ácidos (pH bajo) se usan para remover sarro y óxido.",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Cómo desinfectar baños públicos o de alto tráfico correctamente?",
+        answer: "Primero lava con detergente para remover la suciedad visible (limpieza). Luego, enjuaga. Finalmente, aplica una solución de Hipoclorito de Sodio (blanqueador) al 5.25% diluido (1 taza por galón de agua) y deja actuar por 10 minutos. Nunca mezcles el detergente con el cloro en el mismo balde.",
+        category: 'tecnico'
+    },
+    {
+        question: "¿Qué beneficios tiene comprar productos de aseo al por mayor o en galón?",
+        answer: "Comprar productos de limpieza en presentaciones institucionales (galón de 3.8L o garrafas de 20L) reduce el costo por mililitro hasta en un 70% comparado con envases pequeños, disminuye la huella de plástico (menos envases desechados) y asegura el abastecimiento constante para tu negocio u hogar.",
+        category: 'compra'
+    },
+    {
+        question: "¿Cómo eliminar manchas amarillas de la ropa blanca?",
+        answer: "Las manchas amarillas por sudor o desodorante son proteicas. Usa nuestro detergente industrial aplicado directo en la mancha, frota ligeramente y deja reposar 15 minutos. Luego, lava en ciclo normal añadiendo 50ml de blanqueador en el agua de enjuague (nunca directo sobre la ropa para evitar dañar las fibras).",
+        category: 'tecnico'
     }
 ];
