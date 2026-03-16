@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { db } from '@/lib/firebase';
+import app from '@/lib/firebase';
 import { Order } from '@/types/order';
+
+const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
 function safeToDate(timestamp: any): Date {
     if (!timestamp) return new Date();
@@ -27,25 +31,79 @@ export interface AdminNotification {
     orderId: string;
 }
 
+async function registerFCMToken() {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    if (!VAPID_KEY) {
+        console.warn('[FCM] NEXT_PUBLIC_FIREBASE_VAPID_KEY not set, skipping FCM token registration');
+        return;
+    }
+
+    try {
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const messaging = getMessaging(app);
+
+        const token = await getToken(messaging, {
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration: registration,
+        });
+
+        if (token) {
+            await fetch('/api/notifications/register-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token }),
+            });
+            console.log('[FCM] Token registered successfully');
+        }
+    } catch (error) {
+        console.warn('[FCM] Could not get FCM token:', error);
+    }
+}
+
 export function useAdminNotifications() {
     const [notifications, setNotifications] = useState<AdminNotification[]>([]);
     const [permissionGranted, setPermissionGranted] = useState(false);
     const knownOrderIds = useRef<Set<string>>(new Set());
     const isFirstLoad = useRef(true);
 
-    // Request browser notification permission on mount
+    // Request browser notification permission + register FCM token
     useEffect(() => {
         if (typeof window === 'undefined' || !('Notification' in window)) return;
-        if (Notification.permission === 'granted') {
-            setPermissionGranted(true);
-        } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then((permission) => {
-                setPermissionGranted(permission === 'granted');
-            });
-        }
+
+        const initNotifications = async () => {
+            let permission = Notification.permission;
+
+            if (permission === 'default') {
+                permission = await Notification.requestPermission();
+            }
+
+            if (permission === 'granted') {
+                setPermissionGranted(true);
+                // Register FCM token for background push
+                await registerFCMToken();
+
+                // Listen for foreground FCM messages
+                try {
+                    const messaging = getMessaging(app);
+                    onMessage(messaging, (payload) => {
+                        const { title, body } = payload.notification || {};
+                        if (title) {
+                            new Notification(title, {
+                                body: body || '',
+                                icon: '/icon.png',
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.warn('[FCM] Could not set up foreground listener', e);
+                }
+            }
+        };
+
+        initNotifications();
     }, []);
 
-    // Subscribe to orders and detect new ones
+    // Subscribe to orders and detect new ones (for in-app notifications)
     useEffect(() => {
         const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
 
@@ -82,14 +140,14 @@ export function useAdminNotifications() {
                     // Add to in-app list
                     setNotifications((prev) => [notification, ...prev]);
 
-                    // Show browser notification if permission granted
-                    if (permissionGranted || Notification.permission === 'granted') {
+                    // Show browser notification if permission granted (fallback for non-FCM)
+                    if (Notification.permission === 'granted') {
                         try {
                             const browserNotif = new Notification(notification.title, {
                                 body: notification.body,
                                 icon: '/icon.png',
                                 badge: '/icon.png',
-                                tag: change.doc.id, // Prevents duplicate notifications for the same order
+                                tag: change.doc.id,
                             });
                             browserNotif.onclick = () => {
                                 window.focus();
@@ -121,7 +179,10 @@ export function useAdminNotifications() {
         if (typeof window === 'undefined' || !('Notification' in window)) return false;
         const permission = await Notification.requestPermission();
         const granted = permission === 'granted';
-        setPermissionGranted(granted);
+        if (granted) {
+            setPermissionGranted(true);
+            await registerFCMToken();
+        }
         return granted;
     };
 

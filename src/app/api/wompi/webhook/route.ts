@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { validateWebhookDynamicSignature } from '@/lib/wompi-service';
 import { updateOrderStatus } from '@/lib/orders-service';
 import { OrderStatus } from '@/types/order';
+import { sendAdminPushNotification } from '@/lib/fcm-service';
 
 interface WompiWebhookPayload {
     event: string;
@@ -73,11 +74,20 @@ export async function POST(request: Request) {
                 // The reference is assumed to be the Firestore orderId
                 await updateOrderStatus(transaction.reference, newStatus, internalNote);
                 console.log(`Successfully updated order ${transaction.reference} to ${newStatus}`);
+
+                // 4. Fire push notification to admin on payment approval
+                if (transaction.status === 'APPROVED') {
+                    const amount = (transaction.amount_in_cents / 100).toLocaleString('es-CO', {
+                        style: 'currency', currency: 'COP', maximumFractionDigits: 0
+                    });
+                    sendAdminPushNotification({
+                        title: '💳 ¡Pago Confirmado!',
+                        body: `Pedido #${transaction.reference.slice(-6)} · ${amount} aprobado`,
+                        data: { orderId: transaction.reference, type: 'payment_confirmed' },
+                    }).catch(e => console.warn('[FCM] Push failed (non-fatal):', e));
+                }
             } catch (firestoreError) {
                 console.error(`Failed to update order ${transaction.reference} in Firestore:`, firestoreError);
-                // Return 200 anyway to prevent Wompi from retrying endlessly if the order ID doesn't exist
-                // Or you could return 500 to force Wompi to retry.
-                // For an MVP, logging and 200 is safer to avoid webhook queue blockage.
             }
         }
 
