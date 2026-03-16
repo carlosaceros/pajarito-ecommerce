@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllProducts, saveProduct } from '@/lib/products-service';
+import { adminGetAllProducts, adminSaveProduct } from '@/lib/products-admin';
 import { getMarketPricesForProduct } from '@/lib/pricing-service';
 
 export const maxDuration = 60; // Allow Vercel to run this for up to 60 seconds
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
         console.log('Starting automated competitor pricing update...');
         
         // 1. Fetch all products from Firestore
-        const products = await getAllProducts(true);
+        const products = await adminGetAllProducts();
         const updatedProducts = [];
 
         for (const product of products) {
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
                 product.competidorPromedio = newCompetidorPromedio;
                 
                 // 3. Save updated product to Firestore
-                await saveProduct(product);
+                await adminSaveProduct(product);
                 updatedProducts.push(product.id);
                 console.log(`Successfully updated ${product.id}`);
             } else {
