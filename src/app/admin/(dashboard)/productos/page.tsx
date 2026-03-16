@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2, Save, X, Database, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Package } from 'lucide-react';
 import { Product } from '@/lib/products';
-import { getAllProducts, saveProduct, deleteProduct, seedProductsToFirestore } from '@/lib/products-service';
+import { getAllProducts, saveProduct, deleteProduct } from '@/lib/products-service';
 import Image from 'next/image';
 
 export default function InventoryPage() {
@@ -12,7 +12,6 @@ export default function InventoryPage() {
     const [loading, setLoading] = useState(true);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [isSeeding, setIsSeeding] = useState(false);
 
     const loadProducts = async () => {
         setLoading(true);
@@ -29,22 +28,6 @@ export default function InventoryPage() {
     useEffect(() => {
         loadProducts();
     }, []);
-
-    const handleSeed = async () => {
-        if (!confirm('¿Estás seguro de que quieres inyectar los productos iniciales? Esto podría sobreescribir datos existentes.')) return;
-        
-        setIsSeeding(true);
-        try {
-            await seedProductsToFirestore();
-            await loadProducts();
-            alert('Productos migrados a la base de datos con éxito.');
-        } catch (error) {
-            console.error(error);
-            alert('Error al migrar productos.');
-        } finally {
-            setIsSeeding(false);
-        }
-    };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -109,14 +92,6 @@ export default function InventoryPage() {
                 </div>
                 <div className="flex gap-3">
                     <button 
-                        onClick={handleSeed}
-                        disabled={isSeeding}
-                        className="flex items-center gap-2 bg-yellow-100 text-yellow-800 hover:bg-yellow-200 px-4 py-2 rounded-lg font-bold transition-colors text-sm"
-                    >
-                        <Database size={16} />
-                        {isSeeding ? 'Migrando...' : 'Migrar Predeterminados'}
-                    </button>
-                    <button 
                         onClick={createNewProduct}
                         className="flex items-center gap-2 bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg font-bold transition-colors"
                     >
@@ -162,7 +137,7 @@ export default function InventoryPage() {
                         <div className="text-center p-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                             <Package className="mx-auto text-gray-400 mb-2" size={32} />
                             <p className="text-sm text-gray-500">No hay productos aún.</p>
-                            <p className="text-xs text-gray-400 mt-1">Usa "Migrar Predeterminados" para cargar los productos iniciales o crea uno nuevo.</p>
+                            <p className="text-xs text-gray-400 mt-1">Crea un nuevo producto para agregarlo al catálogo.</p>
                         </div>
                     )}
                 </div>
@@ -212,7 +187,7 @@ export default function InventoryPage() {
                                                 type="text" 
                                                 value={editingProduct.nombre} 
                                                 onChange={e => handleEditChange('nombre', e.target.value)}
-                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                             />
                                         </div>
                                         <div>
@@ -223,7 +198,7 @@ export default function InventoryPage() {
                                                 value={editingProduct.id} 
                                                 onChange={e => handleEditChange('id', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
                                                 disabled={!editingProduct.id.startsWith('nuevo')}
-                                                className={`w-full border-2 rounded-lg p-2 focus:outline-none ${editingProduct.id.startsWith('nuevo') ? 'border-gray-200 focus:border-red-500' : 'bg-gray-100 border-transparent text-gray-500 cursor-not-allowed'}`}
+                                                className={`w-full border-2 rounded-lg p-2 focus:outline-none ${editingProduct.id.startsWith('nuevo') ? 'border-gray-200 focus:border-red-500 text-gray-900 bg-white placeholder-gray-400' : 'bg-gray-100 border-transparent text-gray-500 cursor-not-allowed'}`}
                                             />
                                         </div>
                                     </div>
@@ -234,7 +209,7 @@ export default function InventoryPage() {
                                             type="text" 
                                             value={editingProduct.slogan} 
                                             onChange={e => handleEditChange('slogan', e.target.value)}
-                                            className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                            className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                         />
                                     </div>
 
@@ -244,7 +219,7 @@ export default function InventoryPage() {
                                             rows={3}
                                             value={editingProduct.descripcion} 
                                             onChange={e => handleEditChange('descripcion', e.target.value)}
-                                            className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none resize-none"
+                                            className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none resize-none text-gray-900 bg-white placeholder-gray-400"
                                         />
                                     </div>
 
@@ -256,7 +231,7 @@ export default function InventoryPage() {
                                                 value={editingProduct.imgFile} 
                                                 onChange={e => handleEditChange('imgFile', e.target.value)}
                                                 placeholder="Ej: PAJARITO_DETERGENTE.png"
-                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                             />
                                         </div>
                                         <div>
@@ -266,7 +241,7 @@ export default function InventoryPage() {
                                                 value={editingProduct.badge} 
                                                 onChange={e => handleEditChange('badge', e.target.value)}
                                                 placeholder="Ej: MÁS VENDIDO"
-                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                                className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                             />
                                         </div>
                                     </div>
@@ -281,7 +256,7 @@ export default function InventoryPage() {
                                                         type="number" 
                                                         value={editingProduct.precios[size as keyof typeof editingProduct.precios]} 
                                                         onChange={e => handleEditChange('precios', { ...editingProduct.precios, [size]: parseInt(e.target.value) || 0 })}
-                                                        className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                                        className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                                     />
                                                 </div>
                                             ))}
@@ -298,7 +273,7 @@ export default function InventoryPage() {
                                                         type="number" 
                                                         value={editingProduct.competidorPromedio[size as keyof typeof editingProduct.competidorPromedio]} 
                                                         onChange={e => handleEditChange('competidorPromedio', { ...editingProduct.competidorPromedio, [size]: parseInt(e.target.value) || 0 })}
-                                                        className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none"
+                                                        className="w-full border-2 border-gray-200 rounded-lg p-2 focus:border-red-500 focus:outline-none text-gray-900 bg-white placeholder-gray-400"
                                                     />
                                                 </div>
                                             ))}
