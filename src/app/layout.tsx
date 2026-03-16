@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
@@ -25,6 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             {children}
+            <Analytics />
           </CartProvider>
         </AuthProvider>
       </body>
