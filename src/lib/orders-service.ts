@@ -9,7 +9,8 @@ import {
     onSnapshot,
     Timestamp,
     getDocs,
-    getDoc
+    getDoc,
+    arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { upsertCustomerFromOrder } from './customers-service';
@@ -84,7 +85,7 @@ export async function updateOrderStatus(
 
     await updateDoc(orderRef, {
         status: newStatus,
-        timeline: [...order.timeline, newTimelineEvent],
+        timeline: arrayUnion(newTimelineEvent),
         updatedAt: now
     });
 }

@@ -250,19 +250,23 @@ export default function PedidosPage() {
         const orderId = active.id as string;
         const newStatus = over.id as OrderStatus;
         const order = orders.find(o => o.id === orderId);
+        const previousStatus = order?.status;
 
-        if (order && order.status !== newStatus) {
+        if (order && previousStatus !== newStatus) {
             // Optimistic update
-            const updatedOrders = orders.map(o =>
+            setOrders(prev => prev.map(o =>
                 o.id === orderId ? { ...o, status: newStatus } : o
-            );
-            setOrders(updatedOrders);
+            ));
 
             try {
                 await updateOrderStatus(orderId, newStatus, `Estado actualizado a ${ORDER_STATUS_CONFIG[newStatus].label}`);
-            } catch (error) {
-                console.error('Error updating status:', error);
-                // Revert on error (could fetch from server again)
+            } catch (error: any) {
+                console.error('[Kanban] Error updating order status:', error?.message || error);
+                // Revert optimistic update
+                setOrders(prev => prev.map(o =>
+                    o.id === orderId ? { ...o, status: previousStatus! } : o
+                ));
+                alert(`No se pudo actualizar el estado del pedido. ${error?.message || 'Verifica tu conexión o los permisos de Firestore.'}`);
             }
         }
     };
