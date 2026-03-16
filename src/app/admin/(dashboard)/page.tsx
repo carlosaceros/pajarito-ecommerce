@@ -351,8 +351,8 @@ export default function AdminDashboard() {
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-blue-200 transition-colors"
-                        >
+                            onClick={() => router.push('/admin/clientes')}
+                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-blue-200 transition-colors">
                             <Users className="text-blue-600 mb-3" size={24} />
                             <p className="font-black text-gray-900 mb-1">Clientes</p>
                             <p className="text-xs text-gray-600">Base de datos completa</p>
