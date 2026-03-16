@@ -15,10 +15,13 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { subscribeToOrders } from '@/lib/orders-service';
 import { Order, OrderStatus } from '@/types/order';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function AdminDashboard() {
     const { user, signOut } = useAuth();
     const router = useRouter();
+    const { notifications, unreadCount, permissionGranted, markAllAsRead, markAsRead, requestPermission } = useAdminNotifications();
 
     const handleSignOut = async () => {
         await signOut();
@@ -148,8 +151,16 @@ export default function AdminDashboard() {
                             Dashboard Ejecutivo
                         </span>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
+                    <div className="flex items-center gap-3">
+                        <NotificationBell
+                            notifications={notifications}
+                            unreadCount={unreadCount}
+                            permissionGranted={permissionGranted}
+                            onMarkAllRead={markAllAsRead}
+                            onMarkRead={markAsRead}
+                            onRequestPermission={requestPermission}
+                        />
+                        <div className="text-right hidden md:block">
                             <p className="text-sm font-medium text-gray-900">{user?.email}</p>
                             <p className="text-xs text-gray-500">Administrador</p>
                         </div>
