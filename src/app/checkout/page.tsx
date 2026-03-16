@@ -155,6 +155,7 @@ export default function CheckoutPage() {
             const orderId = await createOrder(orderData);
 
             // Fire & forget: send push + emails (non-blocking, never fails checkout)
+            // keepalive: true ensures the request survives page navigation
             fetch('/api/notifications/new-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -169,7 +170,8 @@ export default function CheckoutPage() {
                     subtotal,
                     envio: shippingCost,
                 }),
-            }).catch(() => {}); // Completely non-fatal
+                keepalive: true, // Browser keeps request alive even after navigation
+            }).catch(() => {});
 
             // Store order ID in sessionStorage for confirmation page
             sessionStorage.setItem(`order_${orderId}`, JSON.stringify(orderData));
