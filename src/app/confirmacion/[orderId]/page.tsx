@@ -66,7 +66,7 @@ export default function ConfirmacionPage({ params }: { params: Promise<{ orderId
     }
 
     const whatsappMessage = `Hola! Acabo de hacer un pedido (${orderId}) por ${formatCurrency(order.total)} y quiero confirmar los detalles.`;
-    const whatsappUrl = `https://wa.me/573001234567?text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappUrl = `https://wa.me/573026406089?text=${encodeURIComponent(whatsappMessage)}`;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-gray-50 py-12">
@@ -231,16 +231,15 @@ export default function ConfirmacionPage({ params }: { params: Promise<{ orderId
                         <MessageCircle size={20} />
                         CONTACTAR POR WHATSAPP
                     </motion.a>
-                    <Link href="/">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-black py-4 rounded-xl transition-all flex items-center justify-center gap-2"
-                        >
-                            <Home size={20} />
-                            VOLVER AL INICIO
-                        </motion.button>
-                    </Link>
+                    <motion.a
+                        href="/"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-black py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                    >
+                        <Home size={20} />
+                        VOLVER AL INICIO
+                    </motion.a>
                 </div>
             </div>
         </div>

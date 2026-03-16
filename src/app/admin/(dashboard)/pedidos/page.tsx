@@ -37,6 +37,17 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import Image from 'next/image';
 
+/**
+ * Safely convert a Firestore Timestamp (or serialized version) to a JS Date.
+ */
+function safeToDate(timestamp: any): Date {
+    if (!timestamp) return new Date();
+    if (typeof timestamp.toDate === 'function') return timestamp.toDate();
+    if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
+    if (typeof timestamp === 'string' || typeof timestamp === 'number') return new Date(timestamp);
+    return new Date();
+}
+
 const ALL_STATUSES: OrderStatus[] = [
     'pendiente',
     'confirmado',
@@ -55,7 +66,7 @@ interface OrderCardProps {
 
 function OrderCard({ order, onClick, isOverlay }: OrderCardProps) {
     const config = ORDER_STATUS_CONFIG[order.status];
-    const timeAgo = formatDistanceToNow(order.createdAt.toDate(), {
+    const timeAgo = formatDistanceToNow(safeToDate(order.createdAt), {
         addSuffix: true,
         locale: es
     });
@@ -364,7 +375,7 @@ export default function PedidosPage() {
                                     </div>
                                     <p className="text-gray-500 text-sm flex items-center gap-1">
                                         <Calendar size={14} />
-                                        {format(activeOrder.createdAt.toDate(), "d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}
+                                        {format(safeToDate(activeOrder.createdAt), "d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}
                                     </p>
                                 </div>
                                 <button
@@ -498,7 +509,7 @@ export default function PedidosPage() {
                                                         <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${ORDER_STATUS_CONFIG[event.status].bgColor} border-2 border-white ring-1 ring-gray-200`} />
                                                         <p className="text-sm font-bold text-gray-900">{ORDER_STATUS_CONFIG[event.status].label}</p>
                                                         <p className="text-xs text-gray-500">
-                                                            {format(event.timestamp.toDate(), "d MMM, HH:mm", { locale: es })}
+                                                            {format(safeToDate(event.timestamp), "d MMM, HH:mm", { locale: es })}
                                                         </p>
                                                         {event.note && (
                                                             <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
