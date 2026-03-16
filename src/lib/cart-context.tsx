@@ -13,6 +13,7 @@ export interface CartItem {
 
 interface CartContextType {
     cart: CartItem[];
+    isHydrated: boolean;
     addToCart: (product: Product, size: '3.8L' | '10L' | '20L', price: number, cantidad?: number) => void;
     removeFromCart: (productId: string, size: string) => void;
     updateQuantity: (productId: string, size: string, cantidad: number) => void;
@@ -29,6 +30,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isHydrated, setIsHydrated] = useState(false);
 
     // Load cart from localStorage on mount
     useEffect(() => {
@@ -40,6 +42,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 console.error('Error loading cart:', e);
             }
         }
+        setIsHydrated(true); // Mark as hydrated regardless of whether cart had items
     }, []);
 
     // Save cart to localStorage whenever it changes
@@ -117,6 +120,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         <CartContext.Provider
             value={{
                 cart,
+                isHydrated,
                 addToCart,
                 removeFromCart,
                 updateQuantity,

@@ -34,7 +34,7 @@ interface FormErrors {
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { cart, getTotalPrice } = useCart();
+    const { cart, getTotalPrice, isHydrated } = useCart();
     const [formData, setFormData] = useState<FormData>({
         nombre: '',
         cedula: '',
@@ -61,12 +61,17 @@ export default function CheckoutPage() {
         }
     }, [formData.departamento, formData.ciudad, subtotal]);
 
-    // Redirect if cart is empty
+    // Scroll to top on mount
     useEffect(() => {
-        if (cart.length === 0) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, []);
+
+    // Redirect if cart is empty — but only AFTER localStorage has been read (isHydrated)
+    useEffect(() => {
+        if (isHydrated && cart.length === 0) {
             router.push('/');
         }
-    }, [cart, router]);
+    }, [isHydrated, cart, router]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -239,6 +244,18 @@ export default function CheckoutPage() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading spinner while cart is hydrating from localStorage
+    if (!isHydrated) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader className="animate-spin text-red-500 mx-auto mb-3" size={32} />
+                    <p className="text-gray-500 text-sm">Cargando tu carrito...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (cart.length === 0) {
         return null;
