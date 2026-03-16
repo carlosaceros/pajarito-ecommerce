@@ -267,8 +267,7 @@ export default function CheckoutPage() {
                                             name="nombre"
                                             value={formData.nombre}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.nombre ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.nombre ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                             placeholder="Juan Pérez"
                                         />
                                         {errors.nombre && <p className="text-red-600 text-xs mt-1">{errors.nombre}</p>}
@@ -283,8 +282,7 @@ export default function CheckoutPage() {
                                             name="cedula"
                                             value={formData.cedula}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.cedula ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.cedula ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                             placeholder="1234567890"
                                             maxLength={10}
                                         />
@@ -300,8 +298,7 @@ export default function CheckoutPage() {
                                             name="celular"
                                             value={formData.celular}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.celular ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.celular ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                             placeholder="3001234567"
                                             maxLength={10}
                                         />
@@ -317,8 +314,7 @@ export default function CheckoutPage() {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                             placeholder="correo@ejemplo.com"
                                         />
                                         {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email}</p>}
@@ -341,8 +337,7 @@ export default function CheckoutPage() {
                                             name="departamento"
                                             value={formData.departamento}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.departamento ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.departamento ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                         >
                                             <option value="">Seleccionar...</option>
                                             {DEPARTAMENTOS.map(dep => (
@@ -361,8 +356,7 @@ export default function CheckoutPage() {
                                             value={formData.ciudad}
                                             onChange={handleInputChange}
                                             disabled={!formData.departamento}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.ciudad ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.ciudad ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed`}
                                         >
                                             <option value="">Seleccionar...</option>
                                             {formData.departamento && CIUDADES_POR_DEPARTAMENTO[formData.departamento]?.map(city => (
@@ -381,8 +375,7 @@ export default function CheckoutPage() {
                                             name="direccion"
                                             value={formData.direccion}
                                             onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.direccion ? 'border-red-500' : 'border-gray-200'
-                                                } focus:border-red-600 focus:outline-none transition-colors`}
+                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.direccion ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
                                             placeholder="Calle 123 #45-67, Apto 301"
                                         />
                                         {errors.direccion && <p className="text-red-600 text-xs mt-1">{errors.direccion}</p>}
@@ -397,7 +390,7 @@ export default function CheckoutPage() {
                                             value={formData.notas}
                                             onChange={handleInputChange}
                                             rows={3}
-                                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-red-600 focus:outline-none transition-colors resize-none"
+                                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-red-600 focus:outline-none transition-colors resize-none bg-white text-gray-900 placeholder:text-gray-400"
                                             placeholder="Ej: Casa esquinera, portón verde"
                                         />
                                     </div>

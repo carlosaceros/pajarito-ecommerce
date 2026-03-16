@@ -115,7 +115,7 @@ export default function ConfirmacionPage({ params }: { params: Promise<{ orderId
                             <MapPin className="text-blue-600" size={20} />
                             Información de Envío
                         </h2>
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                        <div className="bg-gray-100 rounded-lg p-4 space-y-2 text-sm text-gray-800 border-2 border-gray-200">
                             <p><span className="font-bold">Nombre:</span> {order.cliente.nombre}</p>
                             <p><span className="font-bold">Cédula:</span> {order.cliente.cedula}</p>
                             <p><span className="font-bold">Celular:</span> {order.cliente.celular}</p>
