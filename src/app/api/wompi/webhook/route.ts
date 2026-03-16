@@ -3,6 +3,8 @@ import { validateWebhookDynamicSignature } from '@/lib/wompi-service';
 import { updateOrderStatus } from '@/lib/orders-service';
 import { OrderStatus } from '@/types/order';
 import { sendAdminPushNotification } from '@/lib/fcm-service';
+import { sendPaymentConfirmedEmail } from '@/lib/email-service';
+import { getAdminDB } from '@/lib/firebase-admin';
 
 interface WompiWebhookPayload {
     event: string;
@@ -75,16 +77,39 @@ export async function POST(request: Request) {
                 await updateOrderStatus(transaction.reference, newStatus, internalNote);
                 console.log(`Successfully updated order ${transaction.reference} to ${newStatus}`);
 
-                // 4. Fire push notification to admin on payment approval
+                // 4. Fire push notification + email to customer on payment approval
                 if (transaction.status === 'APPROVED') {
                     const amount = (transaction.amount_in_cents / 100).toLocaleString('es-CO', {
                         style: 'currency', currency: 'COP', maximumFractionDigits: 0
                     });
+                    // Push to admin
                     sendAdminPushNotification({
                         title: '💳 ¡Pago Confirmado!',
                         body: `Pedido #${transaction.reference.slice(-6)} · ${amount} aprobado`,
                         data: { orderId: transaction.reference, type: 'payment_confirmed' },
                     }).catch(e => console.warn('[FCM] Push failed (non-fatal):', e));
+
+                    // Email to customer — fetch order data from Firestore Admin
+                    try {
+                        const db = getAdminDB();
+                        const orderDoc = await db.collection('orders').doc(transaction.reference).get();
+                        if (orderDoc.exists) {
+                            const orderData = orderDoc.data()!;
+                            const customerEmail = orderData.cliente?.email;
+                            const customerName = orderData.cliente?.nombre || 'Cliente';
+                            const total = orderData.total || (transaction.amount_in_cents / 100);
+                            if (customerEmail) {
+                                sendPaymentConfirmedEmail({
+                                    orderId: transaction.reference,
+                                    customerName,
+                                    customerEmail,
+                                    total,
+                                }).catch(e => console.warn('[Email] Payment confirmed email failed:', e));
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Email] Could not fetch order for payment email:', e);
+                    }
                 }
             } catch (firestoreError) {
                 console.error(`Failed to update order ${transaction.reference} in Firestore:`, firestoreError);

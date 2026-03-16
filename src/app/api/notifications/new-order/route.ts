@@ -1,16 +1,28 @@
 import { NextResponse } from 'next/server';
 import { sendAdminPushNotification } from '@/lib/fcm-service';
+import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from '@/lib/email-service';
 
 /**
  * POST /api/notifications/new-order
- * Called from the checkout client-side after a contraentrega order is created.
- * Sends a push notification to all registered admin devices.
- *
- * Body: { orderId: string, customerName: string, total: number, metodoPago: string }
+ * Called from the checkout client-side after any order is created.
+ * Sends:
+ *  - Browser push notification to admin
+ *  - Email confirmation to customer (if email provided)
+ *  - Email alert to admin
  */
 export async function POST(request: Request) {
     try {
-        const { orderId, customerName, total, metodoPago } = await request.json();
+        const {
+            orderId,
+            customerName,
+            customerEmail,
+            total,
+            metodoPago,
+            ciudad,
+            productos,
+            subtotal,
+            envio,
+        } = await request.json();
 
         if (!orderId || !customerName) {
             return NextResponse.json({ error: 'orderId and customerName are required' }, { status: 400 });
@@ -22,18 +34,42 @@ export async function POST(request: Request) {
 
         const isOnline = metodoPago === 'wompi';
 
-        await sendAdminPushNotification({
+        // 1. Push notification to admin (fire and forget)
+        sendAdminPushNotification({
             title: isOnline ? '💳 ¡Pago Online!' : '🛒 ¡Nuevo Pedido!',
             body: isOnline
-                ? `${customerName} · ${formattedTotal} con tarjeta — Pedido #${orderId.slice(-6)}`
-                : `${customerName} · ${formattedTotal} contraentrega — Pedido #${orderId.slice(-6)}`,
+                ? `${customerName} · ${formattedTotal} con tarjeta`
+                : `${customerName} · ${formattedTotal} contraentrega`,
             data: { orderId, type: 'new_order' },
-        });
+        }).catch(e => console.warn('[FCM] Push failed (non-fatal):', e));
+
+        // 2. Email confirmation to customer
+        if (customerEmail && productos) {
+            sendOrderConfirmationEmail({
+                orderId,
+                customerName,
+                customerEmail,
+                productos,
+                subtotal: subtotal || total,
+                envio: envio || 0,
+                total,
+                metodoPago,
+                ciudad,
+            }).catch(e => console.warn('[Email] Order confirmation email failed (non-fatal):', e));
+        }
+
+        // 3. Admin email alert
+        sendNewOrderAdminEmail({
+            orderId,
+            customerName,
+            total,
+            metodoPago,
+            ciudad,
+        }).catch(e => console.warn('[Email] Admin alert email failed (non-fatal):', e));
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
-        console.error('[FCM] Error sending new-order push:', error);
-        // Non-fatal: return success anyway so the checkout flow isn't blocked
-        return NextResponse.json({ success: true, warning: 'Push failed, order still created' });
+        console.error('[Notifications] Error in new-order handler:', error);
+        return NextResponse.json({ success: true, warning: 'Notifications failed, order still created' });
     }
 }

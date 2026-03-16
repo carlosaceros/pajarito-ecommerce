@@ -149,8 +149,25 @@ export default function CheckoutPage() {
 
             const orderId = await createOrder(orderData);
 
+            // Fire & forget: send push + emails (non-blocking, never fails checkout)
+            fetch('/api/notifications/new-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId,
+                    customerName: formData.nombre,
+                    customerEmail: formData.email || null,
+                    total,
+                    metodoPago: paymentMethod,
+                    ciudad: formData.ciudad,
+                    productos: cart,
+                    subtotal,
+                    envio: shippingCost,
+                }),
+            }).catch(() => {}); // Completely non-fatal
+
             // Store order ID in sessionStorage for confirmation page
-            sessionStorage.setItem(`order_${orderId}`, JSON.stringify(orderData)); // Saving full data for confirmation
+            sessionStorage.setItem(`order_${orderId}`, JSON.stringify(orderData));
             sessionStorage.setItem('lastOrderId', orderId);
 
             if (paymentMethod === 'wompi') {
