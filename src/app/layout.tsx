@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "pajarito aseo"
   ],
   verification: {
-    google: "D8korwn8MSRpH3qaGd1j5outfbLxO_WUtxe7Ok8vhz8",
+    google: ["D8korwn8MSRpH3qaGd1j5outfbLxO_WUtxe7Ok8vhz8", "htb2Q-eSNiKBROAxC3B3cERhsIdD7VD3qWmeUs8vYVw"],
   },
   openGraph: {
     type: "website",
