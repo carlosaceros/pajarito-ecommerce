@@ -77,11 +77,11 @@ export async function updateOrderStatus(
     const order = orderSnap.data() as Order;
     const now = Timestamp.now();
 
-    const newTimelineEvent: TimelineEvent = {
+    const newTimelineEvent = removeUndefined({
         status: newStatus,
         timestamp: now,
         note
-    };
+    } as TimelineEvent);
 
     await updateDoc(orderRef, {
         status: newStatus,
