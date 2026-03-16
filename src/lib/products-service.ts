@@ -16,7 +16,7 @@ const CACHE_TIME = 1000 * 60 * 5; // 5 minutes cache
 let cachedProducts: Product[] | null = null;
 let lastFetchTime = 0;
 
-const productsCollection = collection(db, 'productos');
+const productsCollection = collection(db, 'products');
 
 /**
  * Gets all products from Firestore.
@@ -50,7 +50,7 @@ export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
  * Gets a specific product by its ID (slug)
  */
 export async function getProductById(id: string): Promise<Product | null> {
-    const docRef = doc(db, 'productos', id);
+    const docRef = doc(db, 'products', id);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -66,7 +66,7 @@ export async function getProductById(id: string): Promise<Product | null> {
  * Creates or overwrites a product
  */
 export async function saveProduct(product: Product): Promise<void> {
-    const docRef = doc(db, 'productos', product.id);
+    const docRef = doc(db, 'products', product.id);
     const { id, ...data } = product; // Avoid saving ID twice
     
     // Using setDoc to allow custom IDs (slugs)
@@ -80,7 +80,7 @@ export async function saveProduct(product: Product): Promise<void> {
  * Deletes a product
  */
 export async function deleteProduct(id: string): Promise<void> {
-    const docRef = doc(db, 'productos', id);
+    const docRef = doc(db, 'products', id);
     await deleteDoc(docRef);
     
     // Invalidate cache
