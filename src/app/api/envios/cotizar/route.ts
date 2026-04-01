@@ -112,7 +112,7 @@ export async function POST(request: Request) {
                     bultos,
                     esVecino,
                     primerBultoGratis: true,
-                    mensaje: costoBultos.mensajeBulto,
+                    mensaje: costoBultos.mensajePaquete,
                     source: 'free_partial',
                 });
             }
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
                 fechaEntrega: quote.cheapest.fecha_entrega,
                 bultos,
                 esVecino,
-                mensajeBulto: costoBultos.mensajeBulto,
+                mensajePaquete: costoBultos.mensajePaquete,
                 source: '99envios',
                 cotizaciones: quote.all,
             });
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
             dias: '3-7',
             bultos,
             esVecino,
-            mensajeBulto: costoBultos.mensajeBulto,
+            mensajePaquete: costoBultos.mensajePaquete,
             source: 'fallback',
             zonaNombre: fallback.zonaNombre,
             // Tooltip subsidio — comunicar valor de marca

@@ -4,8 +4,7 @@
  * PRD: Logística 2026 — Biocambio360 S.A.S.
  */
 
-// Códigos DANE de la zona "Vecino Soachuno" (Soacha, Bosa, Sibaté y sur de Bogotá)
-// Formato: primeros 5 dígitos = municipio
+// Códigos DANE de la zona "Veci Soachuno/a" (Soacha, Bosa, Sibaté y sur de Bogotá)
 export const SOACHA_ZONE_PREFIXES = [
     '25754', // Soacha
     '25755', // Sibaté
@@ -21,7 +20,7 @@ export const SOACHA_ZONE_CITIES = [
 ];
 
 // Umbrales de envío gratis (COP)
-export const FREE_SHIPPING_LOCAL = 100_000;   // Vecinos Soachunos
+export const FREE_SHIPPING_LOCAL = 100_000;   // Vecis Soachunos/as
 export const FREE_SHIPPING_NACIONAL = 180_000; // Resto del país
 
 // Tarifa plana nacional (Pajarito subsidia el excedente del flete real)
@@ -36,13 +35,13 @@ export const PICKUP_DISCOUNT_PCT = 0.05;
 // Dirección del punto de pick-up
 export const PICKUP_ADDRESS = 'Cra. 7C #44-17 Sur, Barrio San Nicolás, Soacha';
 
-// Peso máximo por bulto (kg)
-export const PESO_MAX_BULTO_KG = 30;
+// Peso máximo por paquete (kg)
+export const PESO_MAX_PAQUETE_KG = 30;
 
 /**
  * Determina si un código DANE (5-8 dígitos) pertenece a la zona local Soacha.
  */
-export function isVecinoSoachuno(destinoCodigo: string): boolean {
+export function isVeciSoacha(destinoCodigo: string): boolean {
     if (!destinoCodigo) return false;
     return SOACHA_ZONE_PREFIXES.some(prefix => destinoCodigo.startsWith(prefix));
 }
@@ -51,7 +50,7 @@ export function isVecinoSoachuno(destinoCodigo: string): boolean {
  * Determina si el nombre de una ciudad pertenece a la zona local Soacha.
  * Útil para validación en UI sin código DANE.
  */
-export function isVecinoSoachunoByCityName(ciudad: string): boolean {
+export function isVeciSoachaByCityName(ciudad: string): boolean {
     if (!ciudad) return false;
     const upper = ciudad.toUpperCase().trim();
     return SOACHA_ZONE_CITIES.some(c => upper.includes(c));
@@ -61,45 +60,60 @@ export function isVecinoSoachunoByCityName(ciudad: string): boolean {
  * Retorna el umbral de envío gratis según la zona.
  */
 export function getShippingThreshold(destinoCodigo?: string): number {
-    if (destinoCodigo && isVecinoSoachuno(destinoCodigo)) {
+    if (destinoCodigo && isVeciSoacha(destinoCodigo)) {
         return FREE_SHIPPING_LOCAL;
     }
     return FREE_SHIPPING_NACIONAL;
 }
 
 /**
- * Calcula el número de bultos requeridos dado el peso total del pedido.
+ * Calcula el número de paquetes requeridos dado el peso total del pedido.
  */
-export function calcularBultos(totalWeightKg: number): number {
+export function calcularPaquetes(totalWeightKg: number): number {
     if (totalWeightKg <= 0) return 1;
-    return Math.ceil(totalWeightKg / PESO_MAX_BULTO_KG);
+    return Math.ceil(totalWeightKg / PESO_MAX_PAQUETE_KG);
 }
 
 /**
- * Calcula el costo de envío total considerando múltiples bultos.
- * El primer bulto aplica la tarifa normal; bultos adicionales se cobran aparte.
+ * Calcula el costo de envío total considerando múltiples paquetes.
+ * El primer paquete aplica la tarifa normal; paquetes adicionales se cobran aparte.
  */
-export function calcularCostoConBultos(
-    costoUnBulto: number,
+export function calcularCostoConPaquetes(
+    costoUnPaquete: number,
     totalWeightKg: number,
     isFree: boolean,
-): { costo: number; bultos: number; mensajeBulto?: string } {
-    const bultos = calcularBultos(totalWeightKg);
-    if (isFree && bultos === 1) {
-        return { costo: 0, bultos };
+): { costo: number; paquetes: number; mensajePaquete?: string } {
+    const paquetes = calcularPaquetes(totalWeightKg);
+    const fmt = (n: number) => new Intl.NumberFormat('es-CO', {
+        style: 'currency', currency: 'COP', minimumFractionDigits: 0,
+    }).format(n);
+
+    if (isFree && paquetes === 1) {
+        return { costo: 0, paquetes };
     }
-    if (isFree && bultos > 1) {
-        // Solo el primer bulto es gratis; los adicionales se cobran
-        const costoExtra = (bultos - 1) * costoUnBulto;
+    if (isFree && paquetes > 1) {
+        const costoExtra = (paquetes - 1) * costoUnPaquete;
         return {
             costo: costoExtra,
-            bultos,
-            mensajeBulto: `Tu pedido ocupa ${bultos} bultos. El 1er bulto es gratis; los ${bultos - 1} adicionales tienen costo de ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(costoExtra)}.`,
+            paquetes,
+            mensajePaquete: `Tu pedido ocupa ${paquetes} paquetes. El 1er paquete es gratis; los ${paquetes - 1} adicionales tienen costo de ${fmt(costoExtra)}.`,
         };
     }
     return {
-        costo: costoUnBulto * bultos,
-        bultos,
-        mensajeBulto: bultos > 1 ? `Tu pedido requiere ${bultos} bultos (${PESO_MAX_BULTO_KG}kg máx. c/u).` : undefined,
+        costo: costoUnPaquete * paquetes,
+        paquetes,
+        mensajePaquete: paquetes > 1 ? `Tu pedido requiere ${paquetes} paquetes (${PESO_MAX_PAQUETE_KG}kg máx. c/u).` : undefined,
     };
 }
+
+// ── Aliases para backwards-compat con importaciones anteriores ──────────────
+/** @deprecated Usa calcularPaquetes */
+export const calcularBultos = calcularPaquetes;
+/** @deprecated Usa calcularCostoConPaquetes */
+export const calcularCostoConBultos = calcularCostoConPaquetes;
+/** @deprecated Usa PESO_MAX_PAQUETE_KG */
+export const PESO_MAX_BULTO_KG = PESO_MAX_PAQUETE_KG;
+/** @deprecated Usa isVeciSoacha */
+export const isVecinoSoachuno = isVeciSoacha;
+/** @deprecated Usa isVeciSoachaByCityName */
+export const isVecinoSoachunoByCityName = isVeciSoachaByCityName;

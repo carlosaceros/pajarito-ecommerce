@@ -10,14 +10,14 @@ import citiesData from '@/lib/cities-99envios.json';
 import { createOrder } from '@/lib/orders-service';
 import { Order } from '@/types/order';
 import {
-    isVecinoSoachuno,
-    isVecinoSoachunoByCityName,
+    isVeciSoacha,
+    isVeciSoachaByCityName,
     FREE_SHIPPING_LOCAL,
     FREE_SHIPPING_NACIONAL,
     TARIFA_PLANA_NACIONAL,
     PICKUP_ADDRESS,
     PICKUP_DISCOUNT_PCT,
-    calcularBultos,
+    calcularPaquetes,
 } from '@/lib/shipping-zones';
 
 const ALL_CITIES_99 = Object.entries(citiesData as Record<string, { codigo: string; ciudad: string; departamento: string }>)
@@ -59,8 +59,8 @@ export default function CheckoutPage() {
         mensaje?: string;
         subsidioMensaje?: string;
         bultos?: number;
-        mensajeBulto?: string;
-        esVecino?: boolean;
+        mensajePaquete?: string;
+        esVeci?: boolean;
         loading?: boolean;
     }>({});
     const [destinoCodigo, setDestinoCodigo] = useState('');
@@ -73,15 +73,15 @@ export default function CheckoutPage() {
 
     const subtotal = getTotalPrice();
     const totalKg = getTotalWeightKg();
-    const bultos = calcularBultos(totalKg);
+    const paquetes = calcularPaquetes(totalKg);
 
-    // Detectar si la ciudad seleccionada es de zona Soachuno
-    const esVecino = destinoCodigo
-        ? isVecinoSoachuno(destinoCodigo)
-        : isVecinoSoachunoByCityName(formData.ciudad);
+    // Detectar si la ciudad seleccionada es de zona Veci
+    const esVeci = destinoCodigo
+        ? isVeciSoacha(destinoCodigo)
+        : isVeciSoachaByCityName(formData.ciudad);
 
-    // Descuento pick-up (solo aplica para vecinos Soachunos)
-    const pickupDiscount = tipoEntrega === 'pickup' && esVecino
+    // Descuento pick-up (solo aplica para Vecis)
+    const pickupDiscount = tipoEntrega === 'pickup' && esVeci
         ? Math.floor(subtotal * PICKUP_DISCOUNT_PCT)
         : 0;
 
@@ -111,8 +111,8 @@ export default function CheckoutPage() {
                     setShippingCost(0);
                     setShippingInfo({
                         source: 'free_shipping',
-                        esVecino: data.esVecino,
-                        bultos: data.bultos,
+                        esVeci: data.esVeci,
+                        bultos: data.paquetes,
                         mensaje: data.mensaje,
                     });
                 } else if (data.sinCobertura) {
@@ -126,9 +126,9 @@ export default function CheckoutPage() {
                         dias: data.dias,
                         mensaje: data.mensaje,
                         subsidioMensaje: data.subsidioMensaje,
-                        bultos: data.bultos,
-                        mensajeBulto: data.mensajeBulto,
-                        esVecino: data.esVecino,
+                        bultos: data.paquetes,
+                        mensajePaquete: data.mensajePaquete,
+                        esVeci: data.esVeci,
                     });
                 }
             })
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                 total,
                 metodoPago: paymentMethod,
                 tipoEntrega,
-                bultos: bultos > 1 ? bultos : undefined,
+                bultos: paquetes > 1 ? paquetes : undefined,
                 status: 'pendiente',
             };
 
@@ -233,7 +233,7 @@ export default function CheckoutPage() {
                         total,
                         metodoPago: paymentMethod,
                         tipoEntrega,
-                        ciudad: tipoEntrega === 'pickup' ? 'PICK-UP Soacha' : formData.ciudad,
+                        ciudad: tipoEntrega === 'pickup' ? 'PICK-UP' : formData.ciudad,
                         productos: cart.map(item => ({
                             product: { nombre: item.product.nombre },
                             size: item.size,
@@ -332,9 +332,9 @@ export default function CheckoutPage() {
                         <div className="lg:col-span-2">
                             <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6 md:p-8 space-y-8">
 
-                                {/* ── Vecino Soachuno Banner ─────────────────── */}
+                                {/* ── Banner Veci ─────────────────── */}
                                 <AnimatePresence>
-                                    {esVecino && (
+                                    {esVeci && (
                                         <motion.div
                                             initial={{ opacity: 0, y: -12 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -345,7 +345,7 @@ export default function CheckoutPage() {
                                                 <div className="text-3xl">🏘️</div>
                                                 <div>
                                                     <p className="font-black text-emerald-800 text-lg leading-tight">
-                                                        ¡Hola, Vecino Soachuno!
+                                                        ¡Hola, Veci! 🏘️
                                                     </p>
                                                     <p className="text-emerald-700 text-sm mt-1">
                                                         Estás cerca de nuestra fábrica en San Nicolás. Tienes beneficios exclusivos:
@@ -366,9 +366,9 @@ export default function CheckoutPage() {
                                     )}
                                 </AnimatePresence>
 
-                                {/* ── Tipo de Entrega (solo vecinos) ────────── */}
+                                {/* ── Tipo de Entrega (solo Vecis) ────────── */}
                                 <AnimatePresence>
-                                    {esVecino && (
+                                    {esVeci && (
                                         <motion.div
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
@@ -571,10 +571,10 @@ export default function CheckoutPage() {
                                                                     <>Envío estimado{shippingInfo.mensaje ? ` · ${shippingInfo.mensaje}` : ''}</>
                                                                 )}
                                                             </span>
-                                                            {/* Mensaje de bultos adicionales */}
-                                                            {shippingInfo.mensajeBulto && (
+                                                            {/* Mensaje de paquetes adicionales */}
+                                                            {shippingInfo.mensajePaquete && (
                                                                 <p className="text-[11px] mt-1 text-amber-700 font-normal">
-                                                                    📦 {shippingInfo.mensajeBulto}
+                                                                    📦 {shippingInfo.mensajePaquete}
                                                                 </p>
                                                             )}
                                                             {/* Tooltop subsidio de marca */}
@@ -759,16 +759,16 @@ export default function CheckoutPage() {
                                     {/* Umbral gratis info */}
                                     {shippingCost > 0 && (
                                         <p className="text-xs text-gray-500">
-                                            {esVecino
-                                                ? `🏘️ Envío gratis desde ${formatCurrency(FREE_SHIPPING_LOCAL)} (zona local)`
+                                            {esVeci
+                                                ? `🏘️ Envío gratis desde ${formatCurrency(FREE_SHIPPING_LOCAL)} (zona Veci Soachuno/a)`
                                                 : `📦 Envío gratis nacional desde ${formatCurrency(FREE_SHIPPING_NACIONAL)}`
                                             }
                                         </p>
                                     )}
-                                    {/* Info bultos */}
-                                    {bultos > 1 && (
+                                    {/* Info paquetes */}
+                                    {paquetes > 1 && (
                                         <p className="text-xs text-amber-600 font-bold">
-                                            📦 {bultos} bultos · {totalKg.toFixed(1)}kg total
+                                            📦 {paquetes} paquetes · {totalKg.toFixed(1)}kg total
                                         </p>
                                     )}
                                 </div>

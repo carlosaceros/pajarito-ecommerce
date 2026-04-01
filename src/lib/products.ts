@@ -30,14 +30,14 @@ export interface Product {
 /** Orden canónico de tamaños en la UI */
 export const SIZE_ORDER: ProductSize[] = ['250ml', '500ml', '1L', '3.8L', '10L', '20L'];
 
-/** Peso en kg por tamaño (compartido por todos los productos líquidos) */
+/** Peso exacto en kg por tamaño (líquidos de densidad ≈1 kg/L) */
 export const PESOS_POR_TALLA: Record<ProductSize, number> = {
-    '250ml': 0.3,
-    '500ml': 0.6,
-    '1L': 1.1,
-    '3.8L': 4.0,
-    '10L': 11.0,
-    '20L': 21.0,
+    '250ml': 0.25,
+    '500ml': 0.5,
+    '1L': 1.0,
+    '3.8L': 3.8,
+    '10L': 10.0,
+    '20L': 20.0,
 };
 
 export const PRODUCTOS: Product[] = [

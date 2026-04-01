@@ -6,13 +6,13 @@ import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/products';
 import { Truck, Sparkles } from 'lucide-react';
-import BultoUpsell from './BultoUpsell';
+import PaqueteUpsell from './PaqueteUpsell';
 import { FREE_SHIPPING_LOCAL, FREE_SHIPPING_NACIONAL } from '@/lib/shipping-zones';
 
 /**
  * CartDrawer — PRD 2026
  * - Doble umbral de envío gratis: $100k local / $180k nacional
- * - Smart Upsell (BultoUpsell) integrado
+ * - Smart Upsell (PaqueteUpsell) integrado
  * - Tooltip subsidiado de marca
  */
 
@@ -226,7 +226,7 @@ export default function CartDrawer() {
                             </div>
 
                             {/* Smart Upsell — fuera del scroll interno para visibilidad */}
-                            <BultoUpsell />
+                            <PaqueteUpsell />
                         </div>
 
                         {/* Footer - Total & Checkout */}
@@ -254,14 +254,14 @@ export default function CartDrawer() {
                                     </div>
                                 )}
 
-                                {/* Peso / bultos info */}
+                                {/* Peso / paquetes info */}
                                 {totalKg > 0 && (
                                     <div className="flex items-center justify-between text-xs text-gray-500">
                                         <span>📦 Peso aprox. del pedido:</span>
                                         <span className="font-bold text-gray-700">
                                             {totalKg.toFixed(1)}kg
                                             {Math.ceil(totalKg / 30) > 1 && (
-                                                <span className="ml-1 text-amber-600">({Math.ceil(totalKg / 30)} bultos)</span>
+                                                <span className="ml-1 text-amber-600">({Math.ceil(totalKg / 30)} paquetes)</span>
                                             )}
                                         </span>
                                     </div>
