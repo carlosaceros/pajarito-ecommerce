@@ -97,15 +97,17 @@ export default function Home() {
       <CartDrawer />
       {/* Hero Section */}
       <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6" style={{ minHeight: '260px' }}>
-        {/* Background: banner image with dark overlay */}
+        {/* Background: banner image — zoomed in to crop the watermark, centered on the action */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/images/detergente-pajarito-banner.png)' }}
+          className="absolute inset-0 bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/images/detergente-pajarito-banner.png)',
+            backgroundSize: '115%',
+            backgroundPosition: 'left 40%',
+          }}
         />
         {/* Gradient overlay — keeps text readable, image subtle */}
         <div className="absolute inset-0 bg-gradient-to-r from-gray-950/92 via-gray-900/80 to-gray-900/50" />
-        {/* Cover bottom-right corner (watermark area) */}
-        <div className="absolute bottom-0 right-0 w-48 h-24 bg-gradient-to-tl from-gray-900 via-gray-900/80 to-transparent" />
         {/* Extra colour blobs */}
         <div className="absolute top-0 right-0 w-full h-full opacity-25 pointer-events-none">
           <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-blue-600 to-purple-600 rounded-full blur-[120px]" />
@@ -166,8 +168,34 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 🇨🇴 Colombia pride strip */}
-      <div className="mx-4 md:mx-auto max-w-7xl mb-8">
+      {/* Section Header: Catálogo 2026 */}
+      <div id="catalogo" className="flex items-end justify-between mb-8 pb-4 border-b border-gray-200 px-4 md:px-0 max-w-7xl mx-auto">
+        <div>
+          <span className="text-red-600 font-bold uppercase text-xs tracking-widest mb-1 block">Nuestros Productos</span>
+          <h2 className="text-3xl font-black text-gray-900" style={{ fontFamily: '"Archivo Black", sans-serif' }}>CATÁLOGO 2026</h2>
+        </div>
+      </div>
+
+      {/* Products Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 max-w-7xl mx-auto mb-12">
+        {isLoadingProducts ? (
+            <div className="col-span-full py-20 text-center text-gray-500 font-bold flex flex-col items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mb-4"></div>
+                Cargando catálogo...
+            </div>
+        ) : (
+            productos.map((producto) => (
+              <ProductCard
+                key={producto.id}
+                product={producto}
+                onAddToCart={handleAddToCart}
+              />
+            ))
+        )}
+      </div>
+
+      {/* 🇨🇴 Colombia pride strip — just before Trust section */}
+      <div className="mx-4 md:mx-auto max-w-7xl mb-10">
         <div className="bg-gradient-to-r from-yellow-400 via-blue-700 to-red-600 rounded-2xl p-px">
           <div className="bg-gray-900 rounded-2xl px-6 py-4 flex flex-wrap items-center gap-4 justify-between">
             <div className="flex items-center gap-3">
@@ -206,33 +234,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Section Header: Catálogo 2026 */}
-      <div id="catalogo" className="flex items-end justify-between mb-8 pb-4 border-b border-gray-200 px-4 md:px-0 max-w-7xl mx-auto">
-        <div>
-          <span className="text-red-600 font-bold uppercase text-xs tracking-widest mb-1 block">Nuestros Productos</span>
-          <h2 className="text-3xl font-black text-gray-900" style={{ fontFamily: '"Archivo Black", sans-serif' }}>CATÁLOGO 2026</h2>
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 max-w-7xl mx-auto mb-20">
-        {isLoadingProducts ? (
-            <div className="col-span-full py-20 text-center text-gray-500 font-bold flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mb-4"></div>
-                Cargando catálogo...
-            </div>
-        ) : (
-            productos.map((producto) => (
-              <ProductCard
-                key={producto.id}
-                product={producto}
-                onAddToCart={handleAddToCart}
-              />
-            ))
-        )}
-      </div>
-
-      {/* Trust Section - Replica del original */}
+      {/* Trust Section */}
       <div className="bg-white rounded-[2rem] p-12 shadow-xl shadow-gray-200/50 border border-gray-100 mb-16 relative overflow-hidden mx-4 md:mx-auto max-w-7xl">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"></div>
         <div className="text-center max-w-3xl mx-auto mb-12">
