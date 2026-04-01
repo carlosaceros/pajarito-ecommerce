@@ -96,18 +96,16 @@ export default function Home() {
       {/* Cart Drawer */}
       <CartDrawer />
       {/* Hero Section */}
-      <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6" style={{ minHeight: '260px' }}>
-        {/* Background: banner image — zoomed in to crop the watermark, centered on the action */}
+      <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6">
+        {/* Background: banner image — cover on mobile, zoomed on desktop to crop watermark */}
         <div
-          className="absolute inset-0 bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center md:bg-[length:115%] md:bg-[position:left_40%] bg-no-repeat"
           style={{
             backgroundImage: 'url(/images/detergente-pajarito-banner.png)',
-            backgroundSize: '115%',
-            backgroundPosition: 'left 40%',
           }}
         />
         {/* Gradient overlay — keeps text readable, image subtle */}
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/92 via-gray-900/80 to-gray-900/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-900/85 to-gray-900/60 md:from-gray-950/92 md:via-gray-900/80 md:to-gray-900/50" />
         {/* Extra colour blobs */}
         <div className="absolute top-0 right-0 w-full h-full opacity-25 pointer-events-none">
           <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-blue-600 to-purple-600 rounded-full blur-[120px]" />
@@ -115,35 +113,35 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-between h-full p-7 md:p-10" style={{ minHeight: '260px' }}>
+        <div className="relative z-10 flex flex-col justify-between p-5 sm:p-7 md:p-10 min-h-[220px] md:min-h-[260px]">
           {/* Top: badges + headline */}
           <div className="flex-1">
-            <div className="flex gap-2 mb-4">
-              <span className="inline-block bg-red-600 text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase shadow-lg border border-red-500">
+            <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
+              <span className="inline-block bg-red-600 text-white px-2.5 sm:px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-black tracking-widest uppercase shadow-lg border border-red-500">
                 Fábrica Directa
               </span>
-              <span className="inline-block bg-white/10 backdrop-blur text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border border-white/20">
+              <span className="inline-block bg-white/10 backdrop-blur text-white px-2.5 sm:px-3 py-1 rounded-md text-[9px] sm:text-[10px] font-black tracking-widest uppercase border border-white/20">
                 Envíos Nacionales
               </span>
             </div>
 
-            {/* Hero headline — inspired by the banner image */}
-            <p className="text-white/70 text-base font-semibold mb-1 tracking-wide">¡El ahorro que sí limpia!</p>
-            <h1 className="font-black leading-[0.85] tracking-tight text-white" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(3rem, 8vw, 5.5rem)' }}>
+            {/* Hero headline — responsive sizing that doesn't clip on mobile */}
+            <p className="text-white/70 text-sm sm:text-base font-semibold mb-1 tracking-wide">¡El ahorro que sí limpia!</p>
+            <h1 className="font-black leading-[0.85] tracking-tight text-white" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(2.2rem, 8vw, 5.5rem)' }}>
               DETERGENTE
             </h1>
-            <h2 className="font-black leading-[0.9] tracking-tight" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(1.6rem, 5vw, 3.2rem)', color: 'transparent', backgroundImage: 'linear-gradient(90deg, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>
+            <h2 className="font-black leading-[0.9] tracking-tight" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(1.2rem, 5vw, 3.2rem)', color: 'transparent', backgroundImage: 'linear-gradient(90deg, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>
               LÍQUIDO / ROPA
             </h2>
 
-            <div className="flex flex-wrap gap-4 mt-5">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-4 sm:mt-5">
               <button
                 onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white text-gray-900 font-black px-8 py-2.5 rounded-xl hover:bg-gray-100 transition-colors shadow-lg text-sm"
+                className="bg-white text-gray-900 font-black px-6 sm:px-8 py-2.5 rounded-xl hover:bg-gray-100 transition-colors shadow-lg text-sm w-fit"
               >
                 VER CATÁLOGO
               </button>
-              <div className="flex items-center gap-4 text-sm font-bold text-gray-400 border-l border-gray-700 pl-4">
+              <div className="hidden sm:flex items-center gap-4 text-sm font-bold text-gray-400 sm:border-l sm:border-gray-700 sm:pl-4">
                 <span className="flex items-center gap-1">
                   <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                   Compra Segura
@@ -157,7 +155,7 @@ export default function Home() {
           </div>
 
           {/* Bottom bar — payment methods */}
-          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 bg-green-600/90 backdrop-blur-sm rounded-xl px-5 py-2.5 text-white text-xs font-bold">
+          <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 bg-green-600/90 backdrop-blur-sm rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 text-white text-[11px] sm:text-xs font-bold">
             <span>Compre Poder y Suavidad Hoy</span>
             <span className="hidden sm:block h-4 w-px bg-white/40" />
             <span className="flex items-center gap-1.5">💳 PSE</span>
