@@ -57,34 +57,28 @@ export const CIUDADES_POR_DEPARTAMENTO: Record<string, string[]> = {
     'San Andrés y Providencia': ['San Andrés']
 };
 
-// Shipping cost calculation by region
+/**
+ * @deprecated La lógica de envío ahora vive en `shipping-zones.ts` y en
+ * `/api/envios/cotizar/route.ts`. Esta función se mantiene solo como
+ * fallback de emergencia. No agregar nueva lógica aquí.
+ *
+ * PRD 2026: umbrales de envío gratis:
+ *   - Vecinos Soachunos (Soacha, Bosa, Sibaté): $100.000
+ *   - Nacional: $180.000
+ *   Tarifa plana nacional (subsidiada): $18.000
+ */
 export function calculateShipping(departamento: string, ciudad: string, subtotal: number): number {
-    // Free shipping for orders over $100,000
-    if (subtotal >= 100000) return 0;
-
-    // Soacha area (same city)
-    if (departamento === 'Cundinamarca' && ciudad === 'Soacha') {
-        return 8000;
+    // Umbral local Vecino Soachuno
+    if (subtotal >= 100000 &&
+        departamento === 'Cundinamarca' &&
+        ['Soacha', 'Sibaté', 'Bosa'].includes(ciudad)) {
+        return 0;
     }
 
-    // Bogotá metropolitan area
-    if (departamento === 'Cundinamarca' &&
-        ['Bogotá D.C.', 'Chía', 'Mosquera', 'Funza', 'Madrid', 'Cajicá'].includes(ciudad)) {
-        return 10000;
-    }
+    // Umbral nacional
+    if (subtotal >= 180000) return 0;
 
-    // Rest of Cundinamarca
-    if (departamento === 'Cundinamarca') {
-        return 12000;
-    }
-
-    // Major cities
-    const majorCities = ['Medellín', 'Cali', 'Barranquilla', 'Bucaramanga', 'Cartagena'];
-    if (majorCities.includes(ciudad)) {
-        return 15000;
-    }
-
-    // Rest of the country
+    // Tarifa plana subsidiada
     return 18000;
 }
 

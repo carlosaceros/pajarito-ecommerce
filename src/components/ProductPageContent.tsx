@@ -6,16 +6,16 @@ import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product, formatCurrency, calcularAhorro } from '@/lib/products';
+import { Product, ProductSize, SIZE_ORDER as GLOBAL_SIZE_ORDER, formatCurrency, calcularAhorro } from '@/lib/products';
 import { useCart } from '@/lib/cart-context';
 import ProductCard from '@/components/ProductCard';
 import Toast from '@/components/Toast';
 
-// Fixed size order
-const SIZE_ORDER: Array<'3.8L' | '10L' | '20L'> = ['3.8L', '10L', '20L'];
+// Fixed size order for product detail page (only main sizes)
+const SIZE_ORDER: ProductSize[] = ['3.8L', '10L', '20L'];
 
 // Badge on product image per size
-const SIZE_PHOTO_BADGE: Record<string, { label: string; bg: string } | null> = {
+const SIZE_PHOTO_BADGE: Partial<Record<ProductSize, { label: string; bg: string } | null>> = {
     '3.8L': null,
     '10L': { label: '10 Litros', bg: 'bg-blue-600' },
     '20L': { label: '20 Litros 🔥', bg: 'bg-orange-600' },
@@ -29,19 +29,19 @@ interface ProductPageContentProps {
 export default function ProductPageContent({ product, relatedProducts }: ProductPageContentProps) {
     const router = useRouter();
     const { addToCart, setIsCartOpen, getTotalItems } = useCart();
-    const [selectedSize, setSelectedSize] = useState<'3.8L' | '10L' | '20L'>('3.8L');
+    const [selectedSize, setSelectedSize] = useState<ProductSize>('3.8L');
     const [quantity, setQuantity] = useState(1);
     const [showToast, setShowToast] = useState(false);
     const [expandedSection, setExpandedSection] = useState<string | null>('ficha');
 
     const savingsData = calcularAhorro(
-        product.precios[selectedSize],
+        product.precios[selectedSize] ?? 0,
         selectedSize,
-        product.competidorPromedio[selectedSize]
+        product.competidorPromedio[selectedSize] ?? 0
     );
 
     const handleAddToCart = () => {
-        addToCart(product, selectedSize, product.precios[selectedSize], quantity);
+        addToCart(product, selectedSize, product.precios[selectedSize] ?? 0, quantity);
         setShowToast(true);
     };
 
@@ -196,7 +196,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                             >
                                                 <div className="text-2xl font-black text-gray-900">{size}</div>
                                                 <div className={`text-xs mt-1 ${selectedSize === size ? 'text-red-600' : 'text-gray-500'}`}>
-                                                    {formatCurrency(product.precios[size])}
+                                                    {formatCurrency(product.precios[size] ?? 0)}
                                                 </div>
                                             </motion.button>
                                         ))}
@@ -209,7 +209,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <span className="text-sm text-gray-600 font-medium">Precio por unidad:</span>
                                         <div className="text-right">
                                             <div className="text-3xl font-black text-gray-900" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
-                                                {formatCurrency(product.precios[selectedSize])}
+                                                {formatCurrency(product.precios[selectedSize] ?? 0)}
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1">
                                                 ${savingsData.nuestroPrecioML}/ml
@@ -241,7 +241,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <div className="flex-1 text-center">
                                             <div className="text-2xl font-black">{quantity}</div>
                                             <div className="text-xs text-gray-500">
-                                                Total: {formatCurrency(product.precios[selectedSize] * quantity)}
+                                                Total: {formatCurrency((product.precios[selectedSize] ?? 0) * quantity)}
                                             </div>
                                         </div>
                                         <motion.button
@@ -274,7 +274,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                 </div>
 
                                 <p className="text-xs text-gray-500 text-center mt-4">
-                                    Envío gratis en compras superiores a $100,000
+                                    Envío gratis desde $100.000 (local) o $180.000 (nacional)
                                 </p>
                             </div>
                         </motion.div>
@@ -332,7 +332,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         key={prod.id}
                                         product={prod}
                                         onAddToCart={(product, size, price, cantidad) => {
-                                            addToCart(product, size as '3.8L' | '10L' | '20L', price, cantidad);
+                                            addToCart(product, size, price, cantidad);
                                             setShowToast(true);
                                         }}
                                     />

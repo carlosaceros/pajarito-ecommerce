@@ -52,9 +52,9 @@ export async function getAllProductSlugs(): Promise<string[]> {
 export function generateProductMetadata(product: Product, size?: string): Metadata {
     const slug = generateProductSlug(product.id, product.nombre);
     const selectedSize = size || '10L';
-    const price = product.precios[selectedSize as keyof typeof product.precios];
-    const priceNum = parseFloat(selectedSize.replace('L', ''));
-    const pricePerMl = (price / priceNum / 1000).toFixed(2);
+    const price = product.precios[selectedSize as keyof typeof product.precios] ?? 0;
+    const priceNum = parseFloat(selectedSize.replace('L', '').replace('ml', ''));
+    const pricePerMl = priceNum > 0 ? (price / priceNum / (selectedSize.endsWith('ml') ? 1 : 1000)).toFixed(2) : '0.00';
 
     // SEO-optimized title with long-tail keywords
     const title = `${product.nombre} ${selectedSize} Industrial - $${price.toLocaleString('es-CO')} | Pajarito`;
@@ -127,7 +127,7 @@ export function generateProductSchema(product: Product, size: string = '10L') {
     // Build one Offer per size variant (better for Google Shopping)
     const sizes: Array<'3.8L' | '10L' | '20L'> = ['3.8L', '10L', '20L'];
     const offers = sizes.map((s) => {
-        const price = product.precios[s];
+        const price = product.precios[s] ?? 0;
         return {
             "@type": "Offer",
             "url": `${BASE_URL}/producto/${slug}`,

@@ -1,12 +1,11 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product } from './products';
-import { calcularAhorro } from './products';
+import { Product, ProductSize, PESOS_POR_TALLA, calcularAhorro } from './products';
 
 export interface CartItem {
     product: Product;
-    size: '3.8L' | '10L' | '20L';
+    size: ProductSize;
     price: number;
     cantidad: number;
 }
@@ -14,13 +13,15 @@ export interface CartItem {
 interface CartContextType {
     cart: CartItem[];
     isHydrated: boolean;
-    addToCart: (product: Product, size: '3.8L' | '10L' | '20L', price: number, cantidad?: number) => void;
+    addToCart: (product: Product, size: ProductSize, price: number, cantidad?: number) => void;
     removeFromCart: (productId: string, size: string) => void;
     updateQuantity: (productId: string, size: string, cantidad: number) => void;
     clearCart: () => void;
     getTotalItems: () => number;
     getTotalPrice: () => number;
     getTotalSavings: () => number;
+    /** Peso total del carrito en kg (para cálculo de bultos) */
+    getTotalWeightKg: () => number;
     isCartOpen: boolean;
     setIsCartOpen: (open: boolean) => void;
 }
@@ -42,7 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 console.error('Error loading cart:', e);
             }
         }
-        setIsHydrated(true); // Mark as hydrated regardless of whether cart had items
+        setIsHydrated(true);
     }, []);
 
     // Save cart to localStorage whenever it changes
@@ -54,7 +55,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [cart]);
 
-    const addToCart = (product: Product, size: '3.8L' | '10L' | '20L', price: number, cantidad: number = 1) => {
+    const addToCart = (product: Product, size: ProductSize, price: number, cantidad: number = 1) => {
         setCart(prevCart => {
             const existingItem = prevCart.find(
                 item => item.product.id === product.id && item.size === size
@@ -116,6 +117,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }, 0);
     };
 
+    const getTotalWeightKg = () => {
+        return cart.reduce((total, item) => {
+            const pesoUnitario = PESOS_POR_TALLA[item.size] ?? 1;
+            return total + (pesoUnitario * item.cantidad);
+        }, 0);
+    };
+
     return (
         <CartContext.Provider
             value={{
@@ -128,6 +136,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 getTotalItems,
                 getTotalPrice,
                 getTotalSavings,
+                getTotalWeightKg,
                 isCartOpen,
                 setIsCartOpen,
             }}

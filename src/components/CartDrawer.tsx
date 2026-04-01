@@ -6,16 +6,32 @@ import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/products';
 import { Truck, Sparkles } from 'lucide-react';
+import BultoUpsell from './BultoUpsell';
+import { FREE_SHIPPING_LOCAL, FREE_SHIPPING_NACIONAL } from '@/lib/shipping-zones';
 
-const FREE_SHIPPING_THRESHOLD = 100000;
+/**
+ * CartDrawer — PRD 2026
+ * - Doble umbral de envío gratis: $100k local / $180k nacional
+ * - Smart Upsell (BultoUpsell) integrado
+ * - Tooltip subsidiado de marca
+ */
 
 export default function CartDrawer() {
-    const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalSavings, isCartOpen, setIsCartOpen } = useCart();
+    const { cart, removeFromCart, updateQuantity, getTotalPrice, getTotalSavings, getTotalWeightKg, isCartOpen, setIsCartOpen } = useCart();
 
     const totalPrice = getTotalPrice();
     const totalSavings = getTotalSavings();
-    const progress = Math.min((totalPrice / FREE_SHIPPING_THRESHOLD) * 100, 100);
-    const amountToFreeShipping = FREE_SHIPPING_THRESHOLD - totalPrice;
+    const totalKg = getTotalWeightKg();
+
+    // En el carrito no conocemos aún la zona del cliente.
+    // Usamos el umbral más alto ($180k) como meta motivadora,
+    // con un sub-mensaje que aclara el beneficio Soachuno.
+    const threshold = FREE_SHIPPING_NACIONAL;
+    const progress = Math.min((totalPrice / threshold) * 100, 100);
+    const amountToFreeShipping = threshold - totalPrice;
+
+    // Umbral local para segundo mensaje motivador
+    const progressLocal = Math.min((totalPrice / FREE_SHIPPING_LOCAL) * 100, 100);
 
     return (
         <AnimatePresence>
@@ -58,23 +74,34 @@ export default function CartDrawer() {
                             </motion.button>
                         </div>
 
-                        {/* Free Shipping Progress Bar */}
+                        {/* Envío gratis progress */}
                         {cart.length > 0 && (
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Truck size={18} className={progress >= 100 ? "text-green-600" : "text-gray-500"} />
                                     <p className="text-sm font-bold text-gray-800">
                                         {progress >= 100 ? (
-                                            <span className="text-green-600 flex items-center gap-1">
-                                                ¡Felicidades! Tienes envío GRATIS 🎉
+                                            <span className="text-green-600">
+                                                ¡Envío GRATIS nacional conseguido! 🎉
+                                            </span>
+                                        ) : progressLocal >= 100 ? (
+                                            <span>
+                                                ✅ <span className="text-green-700">Gratis si eres de Soacha/sur Bogotá</span> · Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para gratis nacional
                                             </span>
                                         ) : (
-                                            <span>Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para envío GRATIS</span>
+                                            <span>
+                                                Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para envío GRATIS nacional
+                                                {totalPrice >= FREE_SHIPPING_LOCAL * 0.7 && (
+                                                    <span className="block text-[11px] text-emerald-600 font-normal mt-0.5">
+                                                        🏘️ ¿Eres de Soacha o sur de Bogotá? Gratis desde {formatCurrency(FREE_SHIPPING_LOCAL)}
+                                                    </span>
+                                                )}
+                                            </span>
                                         )}
                                     </p>
                                 </div>
                                 <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${progress}%` }}
                                         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -85,126 +112,121 @@ export default function CartDrawer() {
                         )}
 
                         {/* Cart Items */}
-                        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                            {cart.length === 0 ? (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="text-center py-16"
-                                >
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="p-5 space-y-4">
+                                {cart.length === 0 ? (
                                     <motion.div
-                                        animate={{
-                                            y: [0, -10, 0],
-                                        }}
-                                        transition={{
-                                            duration: 2,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-center py-16"
                                     >
-                                        <ShoppingBag size={64} className="mx-auto text-gray-300 mb-4" />
-                                    </motion.div>
-                                    <p className="text-gray-400 text-lg font-medium">Tu carrito está vacío</p>
-                                    <p className="text-gray-400 text-sm mt-2">Agrega productos para comenzar</p>
-                                </motion.div>
-                            ) : (
-                                <AnimatePresence mode="popLayout">
-                                    {cart.map((item, idx) => (
                                         <motion.div
-                                            key={`${item.product.id}-${item.size}`}
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.8, x: -50 }}
-                                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                                            exit={{ opacity: 0, scale: 0.8, x: 50 }}
-                                            transition={{
-                                                type: "spring",
-                                                damping: 20,
-                                                stiffness: 300
-                                            }}
-                                            className="bg-white border-2 border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:border-red-200 transition-all"
+                                            animate={{ y: [0, -10, 0] }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                                         >
-                                            <div className="flex gap-4">
-                                                {/* Product Image */}
-                                                <motion.div
-                                                    whileHover={{ scale: 1.05, rotate: 2 }}
-                                                    className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-                                                >
-                                                    <img
-                                                        src={`/images/${item.size === '3.8L' && item.product.imgFileSmall ? item.product.imgFileSmall : item.product.imgFile}`}
-                                                        alt={item.product.nombre}
-                                                        className="w-full h-full object-contain p-2"
-                                                    />
-                                                </motion.div>
+                                            <ShoppingBag size={64} className="mx-auto text-gray-300 mb-4" />
+                                        </motion.div>
+                                        <p className="text-gray-400 text-lg font-medium">Tu carrito está vacío</p>
+                                        <p className="text-gray-400 text-sm mt-2">Agrega productos para comenzar</p>
+                                    </motion.div>
+                                ) : (
+                                    <AnimatePresence mode="popLayout">
+                                        {cart.map((item) => (
+                                            <motion.div
+                                                key={`${item.product.id}-${item.size}`}
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.8, x: -50 }}
+                                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                                exit={{ opacity: 0, scale: 0.8, x: 50 }}
+                                                transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                                                className="bg-white border-2 border-gray-100 rounded-2xl p-4 hover:shadow-lg hover:border-red-200 transition-all"
+                                            >
+                                                <div className="flex gap-4">
+                                                    {/* Product Image */}
+                                                    <motion.div
+                                                        whileHover={{ scale: 1.05, rotate: 2 }}
+                                                        className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+                                                    >
+                                                        <img
+                                                            src={`/images/${(item.size === '3.8L' || item.size === '1L' || item.size === '500ml' || item.size === '250ml') && item.product.imgFileSmall ? item.product.imgFileSmall : item.product.imgFile}`}
+                                                            alt={item.product.nombre}
+                                                            className="w-full h-full object-contain p-2"
+                                                        />
+                                                    </motion.div>
 
-                                                {/* Product Info */}
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="font-black text-gray-900 text-sm mb-1 truncate">
-                                                        {item.product.nombre}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-500 mb-3">
-                                                        Presentación: <span className="font-bold text-red-600">{item.size}</span>
-                                                    </p>
+                                                    {/* Product Info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-black text-gray-900 text-sm mb-1 truncate">
+                                                            {item.product.nombre}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 mb-3">
+                                                            Presentación: <span className="font-bold text-red-600">{item.size}</span>
+                                                        </p>
 
-                                                    {/* Quantity Selector */}
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-1 border border-gray-200">
+                                                        {/* Quantity Selector */}
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-1 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-1 border border-gray-200">
+                                                                <motion.button
+                                                                    whileHover={{ scale: 1.1 }}
+                                                                    whileTap={{ scale: 0.9 }}
+                                                                    onClick={() => updateQuantity(item.product.id, item.size, item.cantidad - 1)}
+                                                                    className="p-2 hover:bg-white rounded-lg transition-colors text-gray-600 hover:text-red-600"
+                                                                >
+                                                                    <Minus size={16} />
+                                                                </motion.button>
+                                                                <motion.span
+                                                                    key={item.cantidad}
+                                                                    initial={{ scale: 1.5, color: '#dc2626' }}
+                                                                    animate={{ scale: 1, color: '#111827' }}
+                                                                    className="text-sm font-black w-8 text-center"
+                                                                >
+                                                                    {item.cantidad}
+                                                                </motion.span>
+                                                                <motion.button
+                                                                    whileHover={{ scale: 1.1 }}
+                                                                    whileTap={{ scale: 0.9 }}
+                                                                    onClick={() => updateQuantity(item.product.id, item.size, item.cantidad + 1)}
+                                                                    className="p-2 hover:bg-white rounded-lg transition-colors text-gray-600 hover:text-green-600"
+                                                                >
+                                                                    <Plus size={16} />
+                                                                </motion.button>
+                                                            </div>
                                                             <motion.button
-                                                                whileHover={{ scale: 1.1 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                onClick={() => updateQuantity(item.product.id, item.size, item.cantidad - 1)}
-                                                                className="p-2 hover:bg-white rounded-lg transition-colors text-gray-600 hover:text-red-600"
+                                                                whileHover={{ scale: 1.05 }}
+                                                                whileTap={{ scale: 0.95 }}
+                                                                onClick={() => removeFromCart(item.product.id, item.size)}
+                                                                className="text-xs text-red-600 hover:text-red-700 font-bold px-3 py-1 hover:bg-red-50 rounded-lg transition-colors"
                                                             >
-                                                                <Minus size={16} />
-                                                            </motion.button>
-                                                            <motion.span
-                                                                key={item.cantidad}
-                                                                initial={{ scale: 1.5, color: '#dc2626' }}
-                                                                animate={{ scale: 1, color: '#111827' }}
-                                                                className="text-sm font-black w-8 text-center"
-                                                            >
-                                                                {item.cantidad}
-                                                            </motion.span>
-                                                            <motion.button
-                                                                whileHover={{ scale: 1.1 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                onClick={() => updateQuantity(item.product.id, item.size, item.cantidad + 1)}
-                                                                className="p-2 hover:bg-white rounded-lg transition-colors text-gray-600 hover:text-green-600"
-                                                            >
-                                                                <Plus size={16} />
+                                                                Eliminar
                                                             </motion.button>
                                                         </div>
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.05 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            onClick={() => removeFromCart(item.product.id, item.size)}
-                                                            className="text-xs text-red-600 hover:text-red-700 font-bold px-3 py-1 hover:bg-red-50 rounded-lg transition-colors"
-                                                        >
-                                                            Eliminar
-                                                        </motion.button>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {/* Price */}
-                                            <motion.div
-                                                layout
-                                                className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center"
-                                            >
-                                                <span className="text-xs text-gray-500 font-medium">Subtotal:</span>
-                                                <motion.span
-                                                    key={item.cantidad}
-                                                    initial={{ scale: 1.2, color: '#dc2626' }}
-                                                    animate={{ scale: 1, color: '#111827' }}
-                                                    className="font-black text-lg"
-                                                    style={{ fontFamily: '"Archivo Black", sans-serif' }}
+                                                {/* Price */}
+                                                <motion.div
+                                                    layout
+                                                    className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center"
                                                 >
-                                                    {formatCurrency(item.price * item.cantidad)}
-                                                </motion.span>
+                                                    <span className="text-xs text-gray-500 font-medium">Subtotal:</span>
+                                                    <motion.span
+                                                        key={item.cantidad}
+                                                        initial={{ scale: 1.2, color: '#dc2626' }}
+                                                        animate={{ scale: 1, color: '#111827' }}
+                                                        className="font-black text-lg"
+                                                        style={{ fontFamily: '"Archivo Black", sans-serif' }}
+                                                    >
+                                                        {formatCurrency(item.price * item.cantidad)}
+                                                    </motion.span>
+                                                </motion.div>
                                             </motion.div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            )}
+                                        ))}
+                                    </AnimatePresence>
+                                )}
+                            </div>
+
+                            {/* Smart Upsell — fuera del scroll interno para visibilidad */}
+                            <BultoUpsell />
                         </div>
 
                         {/* Footer - Total & Checkout */}
@@ -232,6 +254,19 @@ export default function CartDrawer() {
                                     </div>
                                 )}
 
+                                {/* Peso / bultos info */}
+                                {totalKg > 0 && (
+                                    <div className="flex items-center justify-between text-xs text-gray-500">
+                                        <span>📦 Peso aprox. del pedido:</span>
+                                        <span className="font-bold text-gray-700">
+                                            {totalKg.toFixed(1)}kg
+                                            {Math.ceil(totalKg / 30) > 1 && (
+                                                <span className="ml-1 text-amber-600">({Math.ceil(totalKg / 30)} bultos)</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-between items-center">
                                     <span className="font-bold text-gray-600 text-lg">Total a pagar:</span>
                                     <motion.span
@@ -256,7 +291,9 @@ export default function CartDrawer() {
                                     </motion.button>
                                 </Link>
                                 <p className="text-xs text-gray-400 text-center">
-                                    {progress >= 100 ? '¡El envío a toda Colombia es GRATIS para este pedido!' : 'El costo de envío se calculará en el siguiente paso'}
+                                    {progress >= 100
+                                        ? '¡El envío a toda Colombia es GRATIS para este pedido!'
+                                        : 'El costo de envío se calculará en el siguiente paso'}
                                 </p>
                             </motion.div>
                         )}

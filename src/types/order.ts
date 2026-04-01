@@ -46,6 +46,11 @@ export interface Order {
     envio: number;
     total: number;
     metodoPago: 'contraentrega' | 'wompi';
+    tipoEntrega: 'domicilio' | 'pickup';
+    /** Número de bultos calculados para el envío */
+    bultos?: number;
+    /** Descuento aplicado (ej: pick-up 5%) */
+    descuento?: number;
     status: OrderStatus;
     timeline: TimelineEvent[];
     whatsappConversation?: string[];

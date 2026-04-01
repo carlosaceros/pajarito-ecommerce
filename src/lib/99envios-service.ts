@@ -1,3 +1,11 @@
+/**
+ * 99envios-service.ts
+ * Integración con la API de 99 Envíos (multi-mensajería).
+ * Origen fijo: Soacha / Biocambio360 S.A.S.
+ *
+ * Regla crítica PRD: NUNCA retornar transportadoras con valor === 0 o sin cobertura.
+ */
+
 const API_BASE = 'https://integration1.99envios.app/api/integration/v1';
 
 // Origen fijo de Pajarito (SOACHA/CUNDINAMARCA, sucursal Biocambio360)
@@ -65,16 +73,19 @@ export interface QuoteResult {
 /**
  * Cotiza el envío a una ciudad destino (por su código DANE 8 dígitos).
  * Usa el origen de la cuenta (SOACHA/Biocambio360).
+ *
  * @param destinoCodigo Código DANE 8 dígitos del destino (ej: "11001000")
  * @param destinoNombre Nombre de la ciudad destino
  * @param valorDeclarado Valor del pedido
  * @param aplicaContrapago Si paga contra entrega
+ * @param pesoKg Peso total del pedido en kg (default 5kg para un galón)
  */
 export async function cotizarEnvio(
     destinoCodigo: string,
     destinoNombre: string,
     valorDeclarado: number,
     aplicaContrapago: boolean = true,
+    pesoKg: number = 5,
 ): Promise<QuoteResult> {
     const token = await getAuthToken();
 
@@ -86,16 +97,21 @@ export async function cotizarEnvio(
     const yyyy = tomorrow.getFullYear();
     const fecha = `${dd}-${mm}-${yyyy}`;
 
+    // Dimensiones aproximadas proporcionales al peso
+    const alto = Math.max(20, Math.round(pesoKg * 1.5));
+    const largo = Math.max(15, Math.round(pesoKg * 1.2));
+    const ancho = Math.max(15, Math.round(pesoKg * 1.0));
+
     const payload = {
         destino: { codigo: destinoCodigo, nombre: destinoNombre },
         origen: ORIGEN,
         IdTipoEntrega: 1,
         IdServicio: 1,
         valorDeclarado: Math.max(10000, valorDeclarado),
-        peso: 5,   // ~5kg para productos Pajarito (bidón 3.8L)
-        alto: 20,
-        largo: 15,
-        ancho: 15,
+        peso: Math.min(pesoKg, 30), // API máx. 30kg por guía
+        alto,
+        largo,
+        ancho,
         fecha,
         seguro99: false,
         seguro99plus: false,
@@ -120,19 +136,25 @@ export async function cotizarEnvio(
 
     const data: Record<string, QuoteCarrier> = await res.json();
 
-    // Encontrar la más barata con exito: true
+    // --- Regla crítica PRD: filtrar transportadoras con valor === 0 o sin cobertura ---
+    // Iterar y encontrar la más barata con exito: true Y valor > 0
     let cheapestName = '';
     let cheapestValor = Infinity;
 
     for (const [name, carrier] of Object.entries(data)) {
-        if (carrier.exito && typeof carrier.valor === 'number' && carrier.valor < cheapestValor) {
+        if (
+            carrier.exito &&
+            typeof carrier.valor === 'number' &&
+            carrier.valor > 0 && // PRD: NUNCA mostrar valor 0
+            carrier.valor < cheapestValor
+        ) {
             cheapestValor = carrier.valor;
             cheapestName = name;
         }
     }
 
     if (!cheapestName) {
-        throw new Error('Ninguna transportadora pudo cotizar este destino');
+        throw new Error('Ninguna transportadora pudo cotizar este destino con cobertura válida');
     }
 
     const cheapest = data[cheapestName];
@@ -165,21 +187,23 @@ export interface PreenvioData {
     valorDeclarado: number;
     valorContrapago?: number;
     transportadora: string; // 'interrapidisimo' | 'tcc' | 'servientrega' | 'coordinadora' | 'envia'
+    pesoKg?: number;
     diceContener?: string;
     observaciones?: string;
 }
 
 export async function crearPreenvio(data: PreenvioData): Promise<any> {
     const token = await getAuthToken();
+    const pesoKg = data.pesoKg ?? 5;
 
     const payload = {
         IdTipoEntrega: 1,
         IdServicio: 1,
         AplicaContrapago: !!(data.valorContrapago && data.valorContrapago > 0),
-        peso: 5,
-        largo: 15,
-        ancho: 15,
-        alto: 20,
+        peso: Math.min(pesoKg, 30),
+        largo: Math.max(15, Math.round(pesoKg * 1.2)),
+        ancho: Math.max(15, Math.round(pesoKg * 1.0)),
+        alto: Math.max(20, Math.round(pesoKg * 1.5)),
         diceContener: data.diceContener || 'Productos de limpieza y hogar',
         valorDeclarado: data.valorDeclarado,
         seguro99: false,

@@ -1,6 +1,26 @@
+/**
+ * POST /api/envios/cotizar
+ *
+ * Lógica PRD 2026:
+ * 1. Si subtotal >= umbral (local $100k / nacional $180k) → gratis
+ * 2. Si >30kg → calcular bultos, ajustar precio
+ * 3. Intentar 99Envíos API (timeout 8s), filtrando carrieros con valor=0
+ * 4. Fallback → config Firestore o tarifa plana $18.000 (subsidiada por marca)
+ */
+
 import { NextResponse } from 'next/server';
 import { cotizarEnvio } from '@/lib/99envios-service';
 import { getAdminDB } from '@/lib/firebase-admin';
+import {
+    isVecinoSoachuno,
+    FREE_SHIPPING_LOCAL,
+    FREE_SHIPPING_NACIONAL,
+    TARIFA_PLANA_NACIONAL,
+    TARIFA_LOCAL,
+    calcularBultos,
+    calcularCostoConBultos,
+    PESO_MAX_BULTO_KG,
+} from '@/lib/shipping-zones';
 
 const CONFIG_DOC_PATH = 'admin_config/shipping';
 
@@ -28,8 +48,8 @@ async function getShippingConfig(): Promise<ShippingConfig> {
     }
     // Hard fallback
     return {
-        envioGratis: 100000,
-        precioDefault: 18000,
+        envioGratis: FREE_SHIPPING_NACIONAL,
+        precioDefault: TARIFA_PLANA_NACIONAL,
         zonas: [],
     };
 }
@@ -50,56 +70,79 @@ function getFallbackPrice(destinoCodigo: string, config: ShippingConfig): {
     return { precio: config.precioDefault, sinCobertura: false, zonaNombre: 'Precio estándar' };
 }
 
-/**
- * POST /api/envios/cotizar
- * Body: { destinoCodigo, destinoNombre, subtotal, aplicaContrapago? }
- *
- * Logic:
- * 1. If subtotal >= envioGratis → free
- * 2. Try 99 Envíos API (with 8s timeout)
- * 3. On failure → use Firestore fallback config
- * 4. If city marked 'sin_cobertura' → return error
- */
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { destinoCodigo, destinoNombre, subtotal, aplicaContrapago = true } = body;
+        const {
+            destinoCodigo,
+            destinoNombre,
+            subtotal,
+            aplicaContrapago = true,
+            totalWeightKg = 5, // kg totales del pedido
+        } = body;
 
         if (!destinoCodigo) {
             return NextResponse.json({ error: 'destinoCodigo es requerido' }, { status: 400 });
         }
 
-        // --- 1. Envío gratis ---
-        const config = await getShippingConfig();
+        // --- Determinar zona y umbral ---
+        const esVecino = isVecinoSoachuno(destinoCodigo);
+        const umbralGratis = esVecino ? FREE_SHIPPING_LOCAL : FREE_SHIPPING_NACIONAL;
+        const tarifaBase = esVecino ? TARIFA_LOCAL : TARIFA_PLANA_NACIONAL;
+        const bultos = calcularBultos(totalWeightKg);
 
-        if (subtotal && subtotal >= config.envioGratis) {
-            return NextResponse.json({
-                gratis: true,
-                precio: 0,
-                mensaje: `Envío gratis en compras superiores a $${config.envioGratis.toLocaleString('es-CO')}`,
-                source: 'free_shipping',
-            });
+        // --- 1. Envío gratis ---
+        if (subtotal && subtotal >= umbralGratis) {
+            // Si hay múltiples bultos, solo el primero es gratis
+            const costoBultos = calcularCostoConBultos(tarifaBase, totalWeightKg, true);
+            if (costoBultos.costo === 0) {
+                return NextResponse.json({
+                    gratis: true,
+                    precio: 0,
+                    bultos,
+                    esVecino,
+                    mensaje: `🎁 Envío GRATIS${esVecino ? ' (Zona Vecino Soachuno)' : ''} — compra superior a $${umbralGratis.toLocaleString('es-CO')}`,
+                    source: 'free_shipping',
+                });
+            } else {
+                // Primer bulto gratis, adicionales con costo
+                return NextResponse.json({
+                    gratis: false,
+                    precio: costoBultos.costo,
+                    bultos,
+                    esVecino,
+                    primerBultoGratis: true,
+                    mensaje: costoBultos.mensajeBulto,
+                    source: 'free_partial',
+                });
+            }
         }
 
         // --- 2. Intentar 99 Envíos ---
         try {
+            const pesoParaCotizar = Math.min(totalWeightKg, PESO_MAX_BULTO_KG);
             const quote = await cotizarEnvio(
                 destinoCodigo,
                 destinoNombre || '',
                 subtotal || 50000,
                 aplicaContrapago,
+                pesoParaCotizar,
             );
 
-            const total = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
+            const costoUnBulto = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
+            const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
 
             return NextResponse.json({
                 gratis: false,
-                precio: total,
+                precio: costoBultos.costo,
                 precioBase: quote.cheapest.valor,
                 valorContrapago: quote.cheapest.valor_contrapago,
                 transportadora: quote.cheapest.transportadora,
                 dias: quote.cheapest.dias,
                 fechaEntrega: quote.cheapest.fecha_entrega,
+                bultos,
+                esVecino,
+                mensajeBulto: costoBultos.mensajeBulto,
                 source: '99envios',
                 cotizaciones: quote.all,
             });
@@ -108,23 +151,33 @@ export async function POST(request: Request) {
         }
 
         // --- 3. Fallback desde Firestore ---
+        const config = await getShippingConfig();
         const fallback = getFallbackPrice(destinoCodigo, config);
 
         if (fallback.sinCobertura) {
             return NextResponse.json({
                 sinCobertura: true,
-                mensaje: `Lo sentimos, no tenemos cobertura de envío para ${destinoNombre || 'esta ciudad'} (zona: ${fallback.zonaNombre})`,
+                mensaje: `Lo sentimos, no tenemos cobertura de envío para ${destinoNombre || 'esta ciudad'}. Por favor contáctanos.`,
                 source: 'fallback_no_coverage',
             }, { status: 422 });
         }
 
+        const costoBultos = calcularCostoConBultos(fallback.precio, totalWeightKg, false);
+
         return NextResponse.json({
             gratis: false,
-            precio: fallback.precio,
+            precio: costoBultos.costo,
             transportadora: null,
             dias: '3-7',
+            bultos,
+            esVecino,
+            mensajeBulto: costoBultos.mensajeBulto,
             source: 'fallback',
             zonaNombre: fallback.zonaNombre,
+            // Tooltip subsidio — comunicar valor de marca
+            subsidioMensaje: !esVecino
+                ? 'En Pajarito subsidiamos parte de tu envío nacional para que ahorres comprando directo de fábrica.'
+                : undefined,
             mensaje: '* Precio estimado. El costo exacto se confirma al despachar.',
         });
 

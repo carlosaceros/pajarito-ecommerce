@@ -4,6 +4,12 @@ export interface FAQ {
     a: string;
 }
 
+/**
+ * Todos los tamaños disponibles en la plataforma.
+ * Los "extra" (250ml, 500ml, 1L) aplican solo a algunos productos.
+ */
+export type ProductSize = '250ml' | '500ml' | '1L' | '3.8L' | '10L' | '20L';
+
 export interface Product {
     id: string;
     nombre: string;
@@ -15,17 +21,24 @@ export interface Product {
     badge: string;
     color: string;
     faqs: FAQ[];
-    precios: {
-        '3.8L': number;
-        '10L': number;
-        '20L': number;
-    };
-    competidorPromedio: {
-        '3.8L': number;
-        '10L': number;
-        '20L': number;
-    };
+    precios: Partial<Record<ProductSize, number>>;
+    competidorPromedio: Partial<Record<ProductSize, number>>;
+    /** Peso aproximado en kg por cada tamaño, para calcular bultos */
+    pesos?: Partial<Record<ProductSize, number>>;
 }
+
+/** Orden canónico de tamaños en la UI */
+export const SIZE_ORDER: ProductSize[] = ['250ml', '500ml', '1L', '3.8L', '10L', '20L'];
+
+/** Peso en kg por tamaño (compartido por todos los productos líquidos) */
+export const PESOS_POR_TALLA: Record<ProductSize, number> = {
+    '250ml': 0.3,
+    '500ml': 0.6,
+    '1L': 1.1,
+    '3.8L': 4.0,
+    '10L': 11.0,
+    '20L': 21.0,
+};
 
 export const PRODUCTOS: Product[] = [
     {
@@ -44,8 +57,21 @@ export const PRODUCTOS: Product[] = [
             { q: '¿Es biodegradable?', a: 'Totalmente. Nuestros tensoactivos se degradan en menos de 28 días según norma OECD 301D, siendo seguros para vertimientos.' },
             { q: '¿Cuál es la dosificación correcta?', a: 'Para una carga completa (15kg) de ropa muy sucia, use 100ml. Para suciedad normal, 60ml son suficientes.' }
         ],
-        precios: { '3.8L': 25000, '10L': 39000, '20L': 59000 },
-        competidorPromedio: { '3.8L': 8500, '10L': 4800, '20L': 3400 }
+        // Catálogo 2026 — PRD Logística Pajarito
+        precios: {
+            '250ml': 3_500,
+            '1L': 10_000,
+            '3.8L': 27_000,
+            '10L': 43_000,
+            '20L': 63_000,
+        },
+        competidorPromedio: {
+            '250ml': 6_000,
+            '1L': 16_000,
+            '3.8L': 38_000,
+            '10L': 58_000,
+            '20L': 86_000,
+        },
     },
     {
         id: 'desengrasante',
@@ -63,8 +89,17 @@ export const PRODUCTOS: Product[] = [
             { q: '¿Tiene registro sanitario?', a: 'Sí, cumplimos con normatividad INVIMA para productos de aseo industrial y doméstico línea desengrasante.' },
             { q: '¿Quita cochambre de estufas?', a: 'Es su especialidad. Aplique puro sobre la plancha o estufa caliente (60°C), deje actuar 10 min y retire con esponja.' }
         ],
-        precios: { '3.8L': 25000, '10L': 39000, '20L': 59000 },
-        competidorPromedio: { '3.8L': 9200, '10L': 5100, '20L': 3600 }
+        // Catálogo 2026 — PRD Logística Pajarito
+        precios: {
+            '3.8L': 27_000,
+            '10L': 43_000,
+            '20L': 63_000,
+        },
+        competidorPromedio: {
+            '3.8L': 42_000,
+            '10L': 68_000,
+            '20L': 98_000,
+        },
     },
     {
         id: 'suavizante',
@@ -81,8 +116,21 @@ export const PRODUCTOS: Product[] = [
             { q: '¿Qué aroma es?', a: 'Floral-Oceánico con tecnología de microcápsulas que liberan aroma por fricción hasta por 48 horas.' },
             { q: '¿Es hipoalergénico?', a: 'Formulado para minimizar riesgos de alergia, libre de colorantes agresivos. Apto para ropa de bebé.' }
         ],
-        precios: { '3.8L': 25000, '10L': 39000, '20L': 59000 },
-        competidorPromedio: { '3.8L': 8800, '10L': 4900, '20L': 3500 }
+        // Catálogo 2026 — PRD Logística Pajarito
+        precios: {
+            '500ml': 5_500,
+            '1L': 10_000,
+            '3.8L': 27_000,
+            '10L': 43_000,
+            '20L': 63_000,
+        },
+        competidorPromedio: {
+            '500ml': 9_000,
+            '1L': 17_000,
+            '3.8L': 38_000,
+            '10L': 58_000,
+            '20L': 85_000,
+        },
     },
     {
         id: 'blanqueador',
@@ -100,8 +148,17 @@ export const PRODUCTOS: Product[] = [
             { q: '¿Daña la ropa blanca?', a: 'El uso excesivo puede amarillentar. Use la dosis recomendada (1/2 taza por carga) para mantener el blanco brillante.' },
             { q: '¿Se puede mezclar con otros productos?', a: 'PELIGRO: NUNCA mezcle blanqueador con desengrasantes, ácidos o amoníaco. Libera gases tóxicos.' }
         ],
-        precios: { '3.8L': 15000, '10L': 32000, '20L': 49000 },
-        competidorPromedio: { '3.8L': 5500, '10L': 4000, '20L': 3100 }
+        // Catálogo 2026 — PRD Logística Pajarito
+        precios: {
+            '3.8L': 17_000,
+            '10L': 36_000,
+            '20L': 53_000,
+        },
+        competidorPromedio: {
+            '3.8L': 24_000,
+            '10L': 42_000,
+            '20L': 68_000,
+        },
     }
 ];
 
@@ -118,9 +175,10 @@ export const calcularAhorro = (
     volumen: string,
     competidorPrecioAbsoluto: number
 ): SavingsData => {
-    const litros = parseFloat(volumen);
-    const nuestroPrecioML = precioNuestro / (litros * 1000);
-    
+    // Normalizar volumen a ml para calcular precio/ml
+    const volumenML = volumenToML(volumen);
+    const nuestroPrecioML = volumenML > 0 ? precioNuestro / volumenML : 0;
+
     // Safety check in case the competitor price is missing or 0
     if (!competidorPrecioAbsoluto || competidorPrecioAbsoluto <= precioNuestro) {
         return {
@@ -141,6 +199,13 @@ export const calcularAhorro = (
         mostrarFOMO: ahorroDinero > 0
     };
 };
+
+/** Convierte un string de tamaño a mililitros */
+function volumenToML(volumen: string): number {
+    if (volumen.endsWith('ml')) return parseFloat(volumen);
+    if (volumen.endsWith('L')) return parseFloat(volumen) * 1000;
+    return parseFloat(volumen) * 1000; // fallback
+}
 
 // Format currency helper
 export const formatCurrency = (val: number): string => {

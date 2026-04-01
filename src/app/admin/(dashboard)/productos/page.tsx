@@ -126,7 +126,7 @@ export default function InventoryPage() {
                                     <h3 className="font-bold text-gray-900 line-clamp-1">{product.nombre}</h3>
                                     <p className="text-sm text-gray-500 mb-1">{product.id}</p>
                                     <p className="text-xs font-black text-gray-900">
-                                        $ {product.precios['3.8L'].toLocaleString('es-CO')}
+                                        $ {(product.precios['3.8L'] ?? product.precios['10L'] ?? 0).toLocaleString('es-CO')}
                                     </p>
                                 </div>
                             </div>
