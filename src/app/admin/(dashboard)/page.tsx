@@ -9,7 +9,8 @@ import {
     DollarSign,
     Package,
     ArrowUpRight,
-    LogOut
+    LogOut,
+    Truck
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
@@ -377,6 +378,17 @@ export default function AdminDashboard() {
                             <DollarSign className="text-green-600 mb-3" size={24} />
                             <p className="font-black text-gray-900 mb-1">Reportes</p>
                             <p className="text-xs text-gray-600">Analytics y finanzas</p>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => router.push('/admin/envios')}
+                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-orange-200 transition-colors"
+                        >
+                            <Truck className="text-orange-500 mb-3" size={24} />
+                            <p className="font-black text-gray-900 mb-1">Zonas de Envío</p>
+                            <p className="text-xs text-gray-600">Tarifas y cobertura por ciudad</p>
                         </motion.button>
                     </div>
                 </div>

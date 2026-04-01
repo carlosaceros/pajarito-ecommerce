@@ -9,11 +9,15 @@ import { useCart } from '@/lib/cart-context';
 import {
     DEPARTAMENTOS,
     CIUDADES_POR_DEPARTAMENTO,
-    calculateShipping,
     validateCedula,
     validateCelular,
     formatCurrency
 } from '@/lib/checkout-utils';
+import citiesData from '@/lib/cities-99envios.json';
+
+const ALL_CITIES_99 = Object.entries(citiesData as Record<string, { codigo: string; ciudad: string; departamento: string }>)
+    .map(([key, v]) => ({ key, ...v }))
+    .sort((a, b) => a.ciudad.localeCompare(b.ciudad));
 import { createOrder } from '@/lib/orders-service';
 import { Order } from '@/types/order';
 
@@ -47,19 +51,68 @@ export default function CheckoutPage() {
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [shippingCost, setShippingCost] = useState(0);
+    const [shippingInfo, setShippingInfo] = useState<{
+        source?: string;
+        transportadora?: string | null;
+        dias?: string | number;
+        sinCobertura?: boolean;
+        mensaje?: string;
+        loading?: boolean;
+    }>({});
+    const [destinoCodigo, setDestinoCodigo] = useState('');
+    const [citySearch, setCitySearch] = useState('');
+    const [citySearchOpen, setCitySearchOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'contraentrega' | 'wompi'>('contraentrega');
 
     const subtotal = getTotalPrice();
     const total = subtotal + shippingCost;
 
-    // Calculate shipping when department/city changes
+    // Cotizar envío con 99 Envíos cuando cambia la ciudad destino
     useEffect(() => {
-        if (formData.departamento && formData.ciudad) {
-            const cost = calculateShipping(formData.departamento, formData.ciudad, subtotal);
-            setShippingCost(cost);
-        }
-    }, [formData.departamento, formData.ciudad, subtotal]);
+        if (!destinoCodigo || !formData.ciudad) return;
+        let cancelled = false;
+        setShippingInfo({ loading: true });
+        setShippingCost(0);
+
+        fetch('/api/envios/cotizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                destinoCodigo,
+                destinoNombre: formData.ciudad,
+                subtotal,
+                aplicaContrapago: paymentMethod === 'contraentrega',
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (cancelled) return;
+                if (data.gratis) {
+                    setShippingCost(0);
+                    setShippingInfo({ source: 'free_shipping', mensaje: data.mensaje });
+                } else if (data.sinCobertura) {
+                    setShippingCost(0);
+                    setShippingInfo({ sinCobertura: true, mensaje: data.mensaje });
+                } else {
+                    setShippingCost(data.precio || 0);
+                    setShippingInfo({
+                        source: data.source,
+                        transportadora: data.transportadora,
+                        dias: data.dias,
+                        mensaje: data.mensaje,
+                    });
+                }
+            })
+            .catch(() => {
+                if (cancelled) return;
+                // Ultimate fallback — $18.000
+                setShippingCost(18000);
+                setShippingInfo({ source: 'fallback', mensaje: '* Precio estimado' });
+            });
+
+        return () => { cancelled = true; };
+    }, [destinoCodigo, formData.ciudad, paymentMethod]);
 
     // Scroll to top on mount
     useEffect(() => {
@@ -372,41 +425,102 @@ export default function CheckoutPage() {
                                     Dirección de Envío
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
+                                    <div className="md:col-span-2">
                                         <label className="block text-sm font-bold text-gray-700 mb-2">
-                                            Departamento *
+                                            Ciudad / Municipio *
                                         </label>
-                                        <select
-                                            name="departamento"
-                                            value={formData.departamento}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.departamento ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
-                                        >
-                                            <option value="">Seleccionar...</option>
-                                            {DEPARTAMENTOS.map(dep => (
-                                                <option key={dep} value={dep}>{dep}</option>
-                                            ))}
-                                        </select>
-                                        {errors.departamento && <p className="text-red-600 text-xs mt-1">{errors.departamento}</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                                            Ciudad *
-                                        </label>
-                                        <select
-                                            name="ciudad"
-                                            value={formData.ciudad}
-                                            onChange={handleInputChange}
-                                            disabled={!formData.departamento}
-                                            className={`w-full px-4 py-3 rounded-lg border-2 ${errors.ciudad ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed`}
-                                        >
-                                            <option value="">Seleccionar...</option>
-                                            {formData.departamento && CIUDADES_POR_DEPARTAMENTO[formData.departamento]?.map(city => (
-                                                <option key={city} value={city}>{city}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={citySearch || (formData.ciudad ? `${formData.ciudad}${formData.departamento ? ' / ' + formData.departamento : ''}` : '')}
+                                                onChange={e => {
+                                                    setCitySearch(e.target.value);
+                                                    setCitySearchOpen(true);
+                                                    if (!e.target.value) {
+                                                        setFormData(prev => ({ ...prev, ciudad: '', departamento: '' }));
+                                                        setDestinoCodigo('');
+                                                        setShippingInfo({});
+                                                        setShippingCost(0);
+                                                    }
+                                                }}
+                                                onFocus={() => setCitySearchOpen(true)}
+                                                onBlur={() => setTimeout(() => setCitySearchOpen(false), 200)}
+                                                className={`w-full px-4 py-3 rounded-lg border-2 ${errors.ciudad ? 'border-red-500' : 'border-gray-200'} focus:border-red-600 focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400`}
+                                                placeholder="Busca tu ciudad (ej: Bogotá, Medellín, Cali...)"
+                                                autoComplete="off"
+                                            />
+                                            {citySearchOpen && citySearch.length >= 2 && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-xl z-30 max-h-56 overflow-y-auto">
+                                                    {ALL_CITIES_99.filter(c =>
+                                                        c.ciudad.includes(citySearch.toUpperCase()) ||
+                                                        c.departamento.includes(citySearch.toUpperCase()) ||
+                                                        c.codigo.includes(citySearch)
+                                                    ).slice(0, 15).map(city => (
+                                                        <button
+                                                            key={city.codigo}
+                                                            type="button"
+                                                            className="w-full text-left px-4 py-3 hover:bg-red-50 transition-colors flex items-center justify-between border-b border-gray-100 last:border-0"
+                                                            onMouseDown={() => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    ciudad: city.ciudad,
+                                                                    departamento: city.departamento,
+                                                                }));
+                                                                setDestinoCodigo(city.codigo);
+                                                                setCitySearch('');
+                                                                setCitySearchOpen(false);
+                                                                if (errors.ciudad) setErrors(prev => ({ ...prev, ciudad: '' }));
+                                                            }}
+                                                        >
+                                                            <div>
+                                                                <span className="font-semibold text-gray-900">{city.ciudad}</span>
+                                                                <span className="text-sm text-gray-500 ml-2">{city.departamento}</span>
+                                                            </div>
+                                                            <span className="text-xs text-gray-400 font-mono">{city.codigo}</span>
+                                                        </button>
+                                                    ))}
+                                                    {ALL_CITIES_99.filter(c =>
+                                                        c.ciudad.includes(citySearch.toUpperCase()) || c.departamento.includes(citySearch.toUpperCase())
+                                                    ).length === 0 && (
+                                                        <div className="px-4 py-3 text-gray-500 text-sm">No se encontraron resultados</div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {formData.ciudad && (
+                                            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
+                                                <MapPin size={11} />
+                                                {formData.ciudad}, {formData.departamento}
+                                                {destinoCodigo && <span className="font-mono text-gray-400">· código {destinoCodigo}</span>}
+                                            </p>
+                                        )}
                                         {errors.ciudad && <p className="text-red-600 text-xs mt-1">{errors.ciudad}</p>}
+                                        {/* Shipping info badge */}
+                                        {formData.ciudad && (
+                                            <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                                                shippingInfo.loading ? 'bg-gray-100 text-gray-500' :
+                                                shippingInfo.sinCobertura ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                shippingInfo.source === 'free_shipping' ? 'bg-green-50 text-green-700' :
+                                                'bg-blue-50 text-blue-700'
+                                            }`}>
+                                                {shippingInfo.loading && <span className="animate-spin">⏳</span>}
+                                                {shippingInfo.sinCobertura && '⛔'}
+                                                {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === 'free_shipping' && '🎁'}
+                                                {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === '99envios' && '🚚'}
+                                                {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === 'fallback' && '📦'}
+                                                <span>
+                                                    {shippingInfo.loading && 'Cotizando envío...'}
+                                                    {!shippingInfo.loading && shippingInfo.sinCobertura && shippingInfo.mensaje}
+                                                    {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === 'free_shipping' && shippingInfo.mensaje}
+                                                    {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === '99envios' && (
+                                                        <>Envío con {shippingInfo.transportadora} · {shippingInfo.dias} días hábiles</>
+                                                    )}
+                                                    {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === 'fallback' && (
+                                                        <>Envío estimado{shippingInfo.mensaje ? ` · ${shippingInfo.mensaje}` : ''}</>
+                                                    )}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="md:col-span-2">
@@ -524,12 +638,20 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
+                            {/* Sin cobertura warning */}
+                            {shippingInfo.sinCobertura && (
+                                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-start gap-2">
+                                    <span className="text-base">⛔</span>
+                                    <span>{shippingInfo.mensaje || 'No hay cobertura de envío para esta ciudad.'} Por favor elige otra ciudad o contáctanos.</span>
+                                </div>
+                            )}
+
                             {/* Submit Button */}
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !!shippingInfo.loading || !!shippingInfo.sinCobertura}
                                 className={`w-full text-white font-black py-4 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${paymentMethod === 'wompi'
                                         ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
                                         : 'bg-red-600 hover:bg-red-700 shadow-red-200'
