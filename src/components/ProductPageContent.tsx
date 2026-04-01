@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -11,6 +11,16 @@ import { useCart } from '@/lib/cart-context';
 import ProductCard from '@/components/ProductCard';
 import Toast from '@/components/Toast';
 
+// Fixed size order
+const SIZE_ORDER: Array<'3.8L' | '10L' | '20L'> = ['3.8L', '10L', '20L'];
+
+// Badge on product image per size
+const SIZE_PHOTO_BADGE: Record<string, { label: string; bg: string } | null> = {
+    '3.8L': null,
+    '10L': { label: '10 Litros', bg: 'bg-blue-600' },
+    '20L': { label: '20 Litros 🔥', bg: 'bg-orange-600' },
+};
+
 interface ProductPageContentProps {
     product: Product;
     relatedProducts: Product[];
@@ -18,8 +28,8 @@ interface ProductPageContentProps {
 
 export default function ProductPageContent({ product, relatedProducts }: ProductPageContentProps) {
     const router = useRouter();
-    const { addToCart, setIsCartOpen } = useCart();
-    const [selectedSize, setSelectedSize] = useState<'3.8L' | '10L' | '20L'>('10L');
+    const { addToCart, setIsCartOpen, getTotalItems } = useCart();
+    const [selectedSize, setSelectedSize] = useState<'3.8L' | '10L' | '20L'>('3.8L');
     const [quantity, setQuantity] = useState(1);
     const [showToast, setShowToast] = useState(false);
     const [expandedSection, setExpandedSection] = useState<string | null>('ficha');
@@ -50,22 +60,40 @@ export default function ProductPageContent({ product, relatedProducts }: Product
             />
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                {/* Breadcrumb */}
-                <div className="bg-white border-b">
-                    <div className="max-w-7xl mx-auto px-4 py-3">
+                {/* Sticky header with breadcrumb + cart */}
+                <header className="bg-white border-b shadow-sm sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                         <nav className="flex items-center gap-2 text-sm text-gray-500">
-                            <Link href="/" className="hover:text-red-600 transition-colors">
-                                Inicio
-                            </Link>
+                            <Link href="/" className="hover:text-red-600 transition-colors">Inicio</Link>
                             <span>/</span>
-                            <Link href="/#catalogo" className="hover:text-red-600 transition-colors">
-                                Productos
-                            </Link>
+                            <Link href="/#catalogo" className="hover:text-red-600 transition-colors">Productos</Link>
                             <span>/</span>
-                            <span className="text-gray-900 font-medium">{product.nombre}</span>
+                            <span className="text-gray-900 font-medium truncate max-w-[140px] sm:max-w-none">{product.nombre}</span>
                         </nav>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsCartOpen(true)}
+                            className="relative flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md"
+                        >
+                            <ShoppingCart size={18} />
+                            <span className="hidden sm:inline">Ver carrito</span>
+                            <AnimatePresence>
+                                {getTotalItems() > 0 && (
+                                    <motion.span
+                                        key={getTotalItems()}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        exit={{ scale: 0 }}
+                                        className="absolute -top-2 -right-2 bg-white text-red-600 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-red-600 shadow"
+                                    >
+                                        {getTotalItems()}
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+                        </motion.button>
                     </div>
-                </div>
+                </header>
 
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto px-4 py-8">
@@ -99,6 +127,21 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         {product.badge}
                                     </div>
                                 )}
+                                {/* Size badge on photo */}
+                                {SIZE_PHOTO_BADGE[selectedSize] && (
+                                    <motion.div
+                                        key={selectedSize}
+                                        initial={{ scale: 0.7, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        className={`absolute bottom-4 right-4 ${SIZE_PHOTO_BADGE[selectedSize]!.bg} text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg`}
+                                    >
+                                        {SIZE_PHOTO_BADGE[selectedSize]!.label}
+                                    </motion.div>
+                                )}
+                                {/* Colombia badge */}
+                                <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-white/95 text-[10px] font-black px-2.5 py-1.5 rounded-full shadow text-gray-700">
+                                    🇨🇴 <span>100% Colombiano</span>
+                                </div>
                             </div>
 
                             {/* Trust Badges */}
@@ -141,7 +184,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         Selecciona Presentación:
                                     </label>
                                     <div className="grid grid-cols-3 gap-3">
-                                        {(Object.keys(product.precios) as Array<keyof typeof product.precios>).map(size => (
+                                        {SIZE_ORDER.filter(size => product.precios[size] !== undefined).map(size => (
                                             <motion.button
                                                 key={size}
                                                 whileTap={{ scale: 0.95 }}

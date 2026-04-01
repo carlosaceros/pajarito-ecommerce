@@ -104,6 +104,8 @@ export default function Home() {
         />
         {/* Gradient overlay — keeps text readable, image subtle */}
         <div className="absolute inset-0 bg-gradient-to-r from-gray-950/92 via-gray-900/80 to-gray-900/50" />
+        {/* Cover bottom-right corner (watermark area) */}
+        <div className="absolute bottom-0 right-0 w-48 h-24 bg-gradient-to-tl from-gray-900 via-gray-900/80 to-transparent" />
         {/* Extra colour blobs */}
         <div className="absolute top-0 right-0 w-full h-full opacity-25 pointer-events-none">
           <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-blue-600 to-purple-600 rounded-full blur-[120px]" />
@@ -145,18 +147,61 @@ export default function Home() {
                   Compra Segura
                 </span>
                 <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
-                  Calidad Premium
+                  <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  Ahorro que Sí Funciona
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Bottom green bar — just like the banner */}
-          <div className="mt-6 flex items-center justify-between bg-green-600/90 backdrop-blur-sm rounded-xl px-5 py-2.5 text-white text-sm font-bold">
+          {/* Bottom bar — payment methods */}
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 bg-green-600/90 backdrop-blur-sm rounded-xl px-5 py-2.5 text-white text-xs font-bold">
             <span>Compre Poder y Suavidad Hoy</span>
             <span className="hidden sm:block h-4 w-px bg-white/40" />
-            <span className="hidden sm:block">Con Nequi y contra entrega</span>
+            <span className="flex items-center gap-1.5">💳 PSE</span>
+            <span className="flex items-center gap-1.5">📲 Nequi</span>
+            <span className="flex items-center gap-1.5">🚪 Contraentrega</span>
+            <span className="hidden md:flex items-center gap-1.5">📦 Pedidos rastreables</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 🇨🇴 Colombia pride strip */}
+      <div className="mx-4 md:mx-auto max-w-7xl mb-8">
+        <div className="bg-gradient-to-r from-yellow-400 via-blue-700 to-red-600 rounded-2xl p-px">
+          <div className="bg-gray-900 rounded-2xl px-6 py-4 flex flex-wrap items-center gap-4 justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🇨🇴</span>
+              <div>
+                <p className="text-white font-black text-base leading-tight" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
+                  Hecho con manos colombianas
+                </p>
+                <p className="text-gray-400 text-xs mt-0.5">Formulado y fabricado 100% en Soacha, Cundinamarca · Planta propia</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 text-xs font-bold">
+              <div className="flex items-center gap-1.5 text-yellow-400">
+                <span className="text-lg">⭐</span>
+                <div>
+                  <p className="text-white">Calidad INVIMA</p>
+                  <p className="text-gray-400 font-normal">Certificado</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-green-400">
+                <span className="text-lg">🏭</span>
+                <div>
+                  <p className="text-white">Fábrica Directa</p>
+                  <p className="text-gray-400 font-normal">Sin intermediarios</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-blue-400 hidden sm:flex">
+                <span className="text-lg">🤝</span>
+                <div>
+                  <p className="text-white">Generamos empleo</p>
+                  <p className="text-gray-400 font-normal">Local colombiano</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

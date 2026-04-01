@@ -13,14 +13,24 @@ interface ProductCardProps {
     onViewDetails?: (product: Product) => void;
 }
 
+// Fixed order: always 3.8L → 10L → 20L
+const SIZE_ORDER: Array<'3.8L' | '10L' | '20L'> = ['3.8L', '10L', '20L'];
+
+// Badge shown on the product image for each size
+const SIZE_PHOTO_BADGE: Record<string, { label: string; bg: string } | null> = {
+    '3.8L': null,
+    '10L': { label: '10 Litros', bg: 'bg-blue-600' },
+    '20L': { label: '20 Litros 🔥', bg: 'bg-orange-600' },
+};
+
 export default function ProductCard({ product, onAddToCart, onViewDetails }: ProductCardProps) {
-    const [selectedSize, setSelectedSize] = useState<'3.8L' | '10L' | '20L'>('10L');
+    const [selectedSize, setSelectedSize] = useState<'3.8L' | '10L' | '20L'>('3.8L');
     const [quantity, setQuantity] = useState(1);
 
     const handleAddToCart = () => {
         if (onAddToCart) {
             onAddToCart(product, selectedSize, product.precios[selectedSize], quantity);
-            setQuantity(1); // Reset quantity after adding
+            setQuantity(1);
         }
     };
 
@@ -30,6 +40,9 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
         product.competidorPromedio[selectedSize]
     );
 
+    const productSlug = generateProductSlug(product.id, product.nombre);
+    const sizeBadge = SIZE_PHOTO_BADGE[selectedSize];
+
     return (
         <motion.div
             layout
@@ -38,15 +51,18 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col hover:shadow-2xl transition-all duration-300 group overflow-hidden"
         >
-            <div className="h-56 bg-gray-50 relative flex items-center justify-center p-6 overflow-hidden">
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${product.color}`}></div>
+            {/* Product image — clicking anywhere on it navigates to detail */}
+            <Link href={`/producto/${productSlug}`} className="block h-56 bg-gray-50 relative flex items-center justify-center p-6 overflow-hidden cursor-pointer">
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${product.color}`} />
                 <motion.img
                     whileHover={{ scale: 1.1, rotate: 3 }}
                     transition={{ type: "spring", stiffness: 300 }}
                     src={`/images/${selectedSize === '3.8L' && product.imgFileSmall ? product.imgFileSmall : product.imgFile}`}
-                    alt={product.nombre}
+                    alt={`${product.nombre} ${selectedSize}`}
                     className="h-full w-full object-contain drop-shadow-md z-10"
                 />
+
+                {/* Product badge (offer/label) */}
                 {product.badge && (
                     <motion.div
                         initial={{ x: -100 }}
@@ -57,17 +73,34 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
                         {product.badge}
                     </motion.div>
                 )}
-                <Link href={`/producto/${generateProductSlug(product.id, product.nombre)}`}>
-                    <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="absolute top-3 right-3 bg-white/80 p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-white transition-all shadow-sm backdrop-blur-sm z-20 opacity-0 group-hover:opacity-100"
-                        title="Ver detalles"
+
+                {/* Size badge on photo — helps differentiate 10L & 20L (same image) */}
+                {sizeBadge && (
+                    <motion.div
+                        key={selectedSize}
+                        initial={{ scale: 0.7, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className={`absolute bottom-3 right-3 ${sizeBadge.bg} text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg z-20 tracking-wide`}
                     >
-                        <Search size={18} />
-                    </motion.button>
-                </Link>
-            </div>
+                        {sizeBadge.label}
+                    </motion.div>
+                )}
+
+                {/* Magnifier icon (shows on hover) */}
+                <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="absolute top-3 right-3 bg-white/80 p-2 rounded-full text-gray-500 hover:text-blue-600 hover:bg-white transition-all shadow-sm backdrop-blur-sm z-20 opacity-0 group-hover:opacity-100"
+                    title="Ver detalles"
+                >
+                    <Search size={18} />
+                </motion.div>
+
+                {/* 🇨🇴 Made in Colombia badge */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm text-[9px] font-black px-2 py-1 rounded-full shadow z-20 text-gray-700">
+                    🇨🇴 <span>100% Colombiano</span>
+                </div>
+            </Link>
+
             <div className="p-5 flex-1 flex flex-col relative z-20 bg-white">
                 <div className="mb-1">
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Línea Industrial</span>
@@ -77,13 +110,13 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
                 </div>
                 <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-snug">{product.descripcion}</p>
 
-                {/* Size Selector */}
+                {/* Size Selector — always in order 3.8L → 10L → 20L */}
                 <div className="mb-4 bg-gray-50 p-1 rounded-lg flex border border-gray-100">
-                    {(Object.keys(product.precios) as Array<keyof typeof product.precios>).map(size => (
+                    {SIZE_ORDER.filter(size => product.precios[size] !== undefined).map(size => (
                         <motion.button
                             key={size}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedSize(size)}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedSize(size); }}
                             className={`flex-1 py-1.5 text-[10px] md:text-xs font-bold rounded-md transition-all ${selectedSize === size
                                 ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200'
                                 : 'text-gray-400 hover:text-gray-600'
@@ -151,7 +184,7 @@ export default function ProductCard({ product, onAddToCart, onViewDetails }: Pro
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={handleAddToCart}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(); }}
                         className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-xl shadow-lg shadow-red-100 transition-all flex items-center gap-2 pr-4 pl-3"
                     >
                         <ShoppingCart size={18} />
