@@ -350,7 +350,20 @@ export default function Home() {
 
           {/* Footer Bottom */}
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-            <p>© 2026 Biocambio360 S.A.S. Todos los derechos reservados.</p>
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p>© 2026 Biocambio360 S.A.S. Todos los derechos reservados.</p>
+              <p>
+                Diseñado y desarrollado con ❤️ por{' '}
+                <a
+                  href="https://thinktic.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-white transition-colors font-semibold"
+                >
+                  THINK TIC S.A.S.
+                </a>
+              </p>
+            </div>
             <div className="flex gap-6">
               <a href="/terminos" className="hover:text-gray-300 transition-colors">Términos y Condiciones</a>
               <a href="/privacidad" className="hover:text-gray-300 transition-colors">Política de Privacidad</a>
