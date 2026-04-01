@@ -19,27 +19,49 @@ let lastFetchTime = 0;
 const productsCollection = collection(db, 'products');
 
 /**
- * Gets all products from Firestore.
- * Caches the result in memory for a few minutes to reduce reads.
+ * Gets all products.
+ *
+ * STRATEGY (PRD 2026):
+ * - Los datos base son los del catálogo hardcoded (`products.ts`) — siempre actualizados.
+ * - Si Firestore tiene un override para el mismo ID (editado desde el admin),
+ *   se **mezcla** encima del producto base: los campos del admin ganan en caso de conflicto.
+ * - Esto garantiza que los precios 2026 se vean de inmediato sin necesidad de un seed.
  */
 export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
     if (!forceRefresh && cachedProducts && Date.now() - lastFetchTime < CACHE_TIME) {
         return cachedProducts;
     }
 
-    const q = query(productsCollection, orderBy('nombre', 'asc'));
-    const snapshot = await getDocs(q);
-    
-    const products: Product[] = [];
-    snapshot.forEach((docSnap) => {
-        products.push({ id: docSnap.id, ...docSnap.data() } as Product);
-    });
+    // Base: catálogo local siempre actualizado
+    const localMap = new Map<string, Product>(PRODUCTOS.map(p => [p.id, p]));
 
-    // If database is completely empty, we can return the fallback hardcoded ones
-    // But ideally we want to seed the DB.
-    if (products.length === 0) {
-        return PRODUCTOS;
+    try {
+        const q = query(productsCollection, orderBy('nombre', 'asc'));
+        const snapshot = await getDocs(q);
+
+        snapshot.forEach((docSnap) => {
+            const firestoreData = { id: docSnap.id, ...docSnap.data() } as Product;
+            const local = localMap.get(firestoreData.id);
+            if (local) {
+                // Merge: Firestore solo sobreescribe si tiene campos propios (admin customization)
+                // Los precios del local SIEMPRE ganan (fuente de verdad 2026)
+                localMap.set(firestoreData.id, {
+                    ...firestoreData,
+                    precios: local.precios,
+                    competidorPromedio: local.competidorPromedio,
+                });
+            } else {
+                // Producto creado solo en Firestore (por el admin), se agrega tal cual
+                localMap.set(firestoreData.id, firestoreData);
+            }
+        });
+    } catch (e) {
+        // Si Firestore falla (offline, permisos) el local es el fallback
+        console.warn('[products-service] Firestore no disponible, usando catálogo local:', e);
     }
+
+    const products = Array.from(localMap.values())
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
     cachedProducts = products;
     lastFetchTime = Date.now();
@@ -50,16 +72,29 @@ export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
  * Gets a specific product by its ID (slug)
  */
 export async function getProductById(id: string): Promise<Product | null> {
-    const docRef = doc(db, 'products', id);
-    const docSnap = await getDoc(docRef);
+    // Primero buscar en local (precios 2026 garantizados)
+    const local = PRODUCTOS.find(p => p.id === id);
 
-    if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as Product;
+    try {
+        const docRef = doc(db, 'products', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const firestoreData = { id: docSnap.id, ...docSnap.data() } as Product;
+            if (local) {
+                // Merge igual que getAllProducts: precios locales ganan
+                return {
+                    ...firestoreData,
+                    precios: local.precios,
+                    competidorPromedio: local.competidorPromedio,
+                };
+            }
+            return firestoreData;
+        }
+    } catch (e) {
+        console.warn('[products-service] getProductById Firestore error:', e);
     }
 
-    // Fallback to hardcoded if not found (useful during migration)
-    const fallback = PRODUCTOS.find(p => p.id === id);
-    return fallback || null;
+    return local || null;
 }
 
 /**
