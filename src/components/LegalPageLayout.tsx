@@ -51,7 +51,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }: LegalP
 
             {/* Mini Footer */}
             <div className="max-w-4xl mx-auto px-4 pb-10 text-center text-xs text-gray-400">
-                © 2026 BioCambio 360 S.A.S. Todos los derechos reservados.
+                © 2026 Biocambio360 S.A.S. Todos los derechos reservados.
             </div>
         </div>
     );

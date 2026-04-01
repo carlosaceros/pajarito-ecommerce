@@ -3,7 +3,7 @@ import LegalPageLayout from '@/components/LegalPageLayout';
 
 export const metadata: Metadata = {
     title: 'Política de Privacidad | Pajarito',
-    description: 'Política de privacidad y tratamiento de datos personales de BioCambio 360 S.A.S.',
+    description: 'Política de privacidad y tratamiento de datos personales de Biocambio360 S.A.S.',
 };
 
 export default function PrivacidadPage() {
@@ -11,7 +11,7 @@ export default function PrivacidadPage() {
         <LegalPageLayout title="Política de Privacidad y Tratamiento de Datos" lastUpdated="16 de marzo de 2026">
             <h2>1. Responsable del Tratamiento</h2>
             <p>
-                <strong>BioCambio 360 S.A.S.</strong>, identificada con NIT 901.XXX.XXX-X, con domicilio en la
+                <strong>Biocambio360 S.A.S.</strong>, identificada con NIT 901.XXX.XXX-X, con domicilio en la
                 Cra. 7C #44-17 Sur, Soacha, Cundinamarca, Colombia, es la responsable del tratamiento de los datos
                 personales recolectados a través de la plataforma <strong>www.productospajarito.com</strong>.
             </p>
@@ -68,7 +68,7 @@ export default function PrivacidadPage() {
             </ul>
             <p>
                 La solicitud deberá incluir: nombre completo, número de identificación, descripción de los hechos que dan
-                lugar a la solicitud, dirección y datos de contacto del titular. BioCambio 360 S.A.S. dará respuesta en un
+                lugar a la solicitud, dirección y datos de contacto del titular. Biocambio360 S.A.S. dará respuesta en un
                 plazo máximo de <strong>quince (15) días hábiles</strong> contados a partir de la recepción de la solicitud.
             </p>
 
@@ -81,7 +81,7 @@ export default function PrivacidadPage() {
 
             <h2>8. Seguridad de la Información</h2>
             <p>
-                BioCambio 360 S.A.S. implementa medidas técnicas, humanas y administrativas razonables para proteger los datos
+                Biocambio360 S.A.S. implementa medidas técnicas, humanas y administrativas razonables para proteger los datos
                 personales contra acceso no autorizado, pérdida, alteración o uso indebido. Los datos de pago en línea son
                 procesados exclusivamente por la pasarela Wompi y no son almacenados en nuestros servidores.
             </p>
@@ -89,7 +89,7 @@ export default function PrivacidadPage() {
             <h2>9. Transferencia Internacional de Datos</h2>
             <p>
                 Los datos pueden ser alojados en servidores ubicados fuera de Colombia (como Google Cloud y Vercel) que
-                cumplen con estándares internacionales de protección de datos. BioCambio 360 S.A.S. garantiza que los
+                cumplen con estándares internacionales de protección de datos. Biocambio360 S.A.S. garantiza que los
                 terceros receptores cumplen con niveles adecuados de protección de datos.
             </p>
 

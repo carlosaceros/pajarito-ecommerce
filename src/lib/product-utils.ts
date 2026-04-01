@@ -58,7 +58,7 @@ export function generateProductMetadata(product: Product, size?: string): Metada
 
     // SEO-optimized title with long-tail keywords
     const title = `${product.nombre} ${selectedSize} Industrial - $${price.toLocaleString('es-CO')} | Pajarito`;
-    const description = `Compra ${product.nombre} ${selectedSize} industrial a $${price.toLocaleString('es-CO')}. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia BioCambio 360.`;
+    const description = `Compra ${product.nombre} ${selectedSize} industrial a $${price.toLocaleString('es-CO')}. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia Biocambio360.`;
     const absoluteImageUrl = `${BASE_URL}/images/${product.imgFile.replace(/%20/g, ' ')}`;
 
     return {
@@ -72,7 +72,7 @@ export function generateProductMetadata(product: Product, size?: string): Metada
             `${product.nombre.toLowerCase()} por mayor`,
             'aseo granel colombia',
             'productos limpieza por mayor',
-            'biocambio 360',
+            'biocambio360',
             'pajarito aseo',
             slug,
             ...product.beneficios.map(b => b.toLowerCase())
@@ -89,7 +89,7 @@ export function generateProductMetadata(product: Product, size?: string): Metada
                     url: absoluteImageUrl,
                     width: 800,
                     height: 800,
-                    alt: `${product.nombre} ${selectedSize} Industrial - Pajarito BioCambio 360`
+                    alt: `${product.nombre} ${selectedSize} Industrial - Pajarito Biocambio360`
                 }
             ]
         },
@@ -140,7 +140,7 @@ export function generateProductSchema(product: Product, size: string = '10L') {
             "sku": `${product.id.toUpperCase()}-${s.replace('.', '_')}`,
             "seller": {
                 "@type": "Organization",
-                "name": "BioCambio 360 S.A.S."
+                "name": "Biocambio360 S.A.S."
             },
             "shippingDetails": {
                 "@type": "OfferShippingDetails",
@@ -197,7 +197,7 @@ export function generateProductSchema(product: Product, size: string = '10L') {
         },
         "manufacturer": {
             "@type": "Organization",
-            "name": "BioCambio 360 S.A.S.",
+            "name": "Biocambio360 S.A.S.",
             "url": BASE_URL,
             "address": {
                 "@type": "PostalAddress",

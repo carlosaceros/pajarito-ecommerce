@@ -95,55 +95,69 @@ export default function Home() {
 
       {/* Cart Drawer */}
       <CartDrawer />
+      {/* Hero Section */}
+      <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6" style={{ minHeight: '260px' }}>
+        {/* Background: banner image with dark overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url(/images/detergente-pajarito-banner.png)' }}
+        />
+        {/* Gradient overlay — keeps text readable, image subtle */}
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/92 via-gray-900/80 to-gray-900/50" />
+        {/* Extra colour blobs */}
+        <div className="absolute top-0 right-0 w-full h-full opacity-25 pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-gradient-to-br from-blue-600 to-purple-600 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] left-[15%] w-[350px] h-[350px] bg-red-600 rounded-full blur-[100px]" />
+        </div>
 
-      {/* Hero Section - Replica exacta del original */}
-      <div className="bg-gray-900 rounded-[2rem] p-8 md:p-16 mb-16 text-white shadow-2xl relative overflow-hidden min-h-[400px] flex items-center mx-4 md:mx-auto max-w-7xl mt-8">
-        <div className="relative z-10 max-w-2xl">
-          <div className="flex gap-2 mb-6">
-            <span className="inline-block bg-red-600 text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase shadow-lg border border-red-500">
-              Fábrica Directa
-            </span>
-            <span className="inline-block bg-white/10 backdrop-blur text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border border-white/20">
-              Envíos Nacionales
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 leading-[0.9] tracking-tight" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
-            PRODUCTOS DE LIMPIEZA INDUSTRIAL POR MAYOR
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#Dc1580] to-[#fd1d91]">
-              DIRECTO DE FÁBRICA.
-            </span>
-          </h1>
-          <p className="text-gray-300 mb-8 text-lg font-medium max-w-lg leading-relaxed">
-            Ahorra hasta un 40% comprando detergentes y aseo por galones. Calidad certificada BioCambio 360.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-gray-900 font-black px-8 py-3 rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              VER OFERTAS
-            </button>
-            <div className="flex items-center gap-4 text-sm font-bold text-gray-400 border-l border-gray-700 pl-4">
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-                Compra Segura
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-7 md:p-10" style={{ minHeight: '260px' }}>
+          {/* Top: badges + headline */}
+          <div className="flex-1">
+            <div className="flex gap-2 mb-4">
+              <span className="inline-block bg-red-600 text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase shadow-lg border border-red-500">
+                Fábrica Directa
               </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-                Calidad Premium
+              <span className="inline-block bg-white/10 backdrop-blur text-white px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border border-white/20">
+                Envíos Nacionales
               </span>
             </div>
+
+            {/* Hero headline — inspired by the banner image */}
+            <p className="text-white/70 text-base font-semibold mb-1 tracking-wide">¡El ahorro que sí limpia!</p>
+            <h1 className="font-black leading-[0.85] tracking-tight text-white" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(3rem, 8vw, 5.5rem)' }}>
+              DETERGENTE
+            </h1>
+            <h2 className="font-black leading-[0.9] tracking-tight" style={{ fontFamily: '"Archivo Black", sans-serif', fontSize: 'clamp(1.6rem, 5vw, 3.2rem)', color: 'transparent', backgroundImage: 'linear-gradient(90deg, #ec4899, #f43f5e)', WebkitBackgroundClip: 'text', backgroundClip: 'text' }}>
+              LÍQUIDO / ROPA
+            </h2>
+
+            <div className="flex flex-wrap gap-4 mt-5">
+              <button
+                onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white text-gray-900 font-black px-8 py-2.5 rounded-xl hover:bg-gray-100 transition-colors shadow-lg text-sm"
+              >
+                VER CATÁLOGO
+              </button>
+              <div className="flex items-center gap-4 text-sm font-bold text-gray-400 border-l border-gray-700 pl-4">
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                  Compra Segura
+                </span>
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
+                  Calidad Premium
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-        {/* Gradient blobs background */}
-        <div className="absolute top-0 right-0 w-full h-full opacity-30 pointer-events-none">
-          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-blue-600 to-purple-600 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[400px] bg-red-600 rounded-full blur-[100px]"></div>
+
+          {/* Bottom green bar — just like the banner */}
+          <div className="mt-6 flex items-center justify-between bg-green-600/90 backdrop-blur-sm rounded-xl px-5 py-2.5 text-white text-sm font-bold">
+            <span>Compre Poder y Suavidad Hoy</span>
+            <span className="hidden sm:block h-4 w-px bg-white/40" />
+            <span className="hidden sm:block">Con Nequi y contra entrega</span>
+          </div>
         </div>
       </div>
 
@@ -181,7 +195,7 @@ export default function Home() {
             TRANQUILIDAD GARANTIZADA
           </h3>
           <p className="text-gray-500 text-lg">
-            Pajarito es una marca registrada de BioCambio 360 S.A.S. No improvisamos con tu limpieza.
+            Pajarito es una marca registrada de Biocambio360 S.A.S. No improvisamos con tu limpieza.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
@@ -289,7 +303,7 @@ export default function Home() {
 
           {/* Footer Bottom */}
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-            <p>© 2026 BioCambio 360 S.A.S. Todos los derechos reservados.</p>
+            <p>© 2026 Biocambio360 S.A.S. Todos los derechos reservados.</p>
             <div className="flex gap-6">
               <a href="/terminos" className="hover:text-gray-300 transition-colors">Términos y Condiciones</a>
               <a href="/privacidad" className="hover:text-gray-300 transition-colors">Política de Privacidad</a>
@@ -307,7 +321,7 @@ export default function Home() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Pajarito - BioCambio 360 S.A.S.",
+              "name": "Pajarito - Biocambio360 S.A.S.",
               "url": "https://pajarito.com",
               "logo": "https://pajarito.com/images/logo.png",
               "description": "Fabricantes de productos de aseo industrial. Detergentes, desengrasantes, suavizantes y blanqueadores al por mayor.",

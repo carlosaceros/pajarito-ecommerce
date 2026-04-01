@@ -3,7 +3,7 @@ import LegalPageLayout from '@/components/LegalPageLayout';
 
 export const metadata: Metadata = {
     title: 'Términos y Condiciones | Pajarito',
-    description: 'Términos y condiciones de uso de la tienda virtual Pajarito de BioCambio 360 S.A.S.',
+    description: 'Términos y condiciones de uso de la tienda virtual Pajarito de Biocambio360 S.A.S.',
 };
 
 export default function TerminosPage() {
@@ -13,7 +13,7 @@ export default function TerminosPage() {
             <p>
                 El presente documento establece los Términos y Condiciones de uso del sitio web{' '}
                 <strong>www.productospajarito.com</strong> (en adelante, "la Plataforma"), propiedad de{' '}
-                <strong>BioCambio 360 S.A.S.</strong>, sociedad comercial identificada con NIT 901.XXX.XXX-X, con domicilio
+                <strong>Biocambio360 S.A.S.</strong>, sociedad comercial identificada con NIT 901.XXX.XXX-X, con domicilio
                 principal en la Cra. 7C #44-17 Sur, Soacha, Cundinamarca, Colombia.
             </p>
             <p>
@@ -38,7 +38,7 @@ export default function TerminosPage() {
             <h2>4. Productos y Precios</h2>
             <p>
                 Los precios exhibidos en la Plataforma incluyen el Impuesto al Valor Agregado (IVA) cuando aplique y están
-                expresados en Pesos Colombianos (COP). BioCambio 360 S.A.S. se reserva el derecho de modificar los precios
+                expresados en Pesos Colombianos (COP). Biocambio360 S.A.S. se reserva el derecho de modificar los precios
                 sin previo aviso, sin que ello afecte los pedidos ya confirmados.
             </p>
             <p>
@@ -81,13 +81,13 @@ export default function TerminosPage() {
             <h2>9. Propiedad Intelectual</h2>
             <p>
                 Todo el contenido de la Plataforma (textos, imágenes, logotipos, diseños, marcas, software) es propiedad
-                exclusiva de BioCambio 360 S.A.S. o de sus licenciantes. Queda prohibida toda reproducción, distribución
+                exclusiva de Biocambio360 S.A.S. o de sus licenciantes. Queda prohibida toda reproducción, distribución
                 o comunicación pública sin autorización previa y por escrito.
             </p>
 
             <h2>10. Limitación de Responsabilidad</h2>
             <p>
-                BioCambio 360 S.A.S. no será responsable por daños indirectos, incidentales o consecuentes derivados del
+                Biocambio360 S.A.S. no será responsable por daños indirectos, incidentales o consecuentes derivados del
                 uso de la Plataforma, interrupciones del servicio, virus informáticos o errores en la información publicada
                 por terceros.
             </p>
@@ -106,7 +106,7 @@ export default function TerminosPage() {
 
             <h2>13. Modificaciones</h2>
             <p>
-                BioCambio 360 S.A.S. se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
+                Biocambio360 S.A.S. se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento.
                 Las modificaciones serán efectivas desde su publicación en la Plataforma. El uso continuado de la
                 Plataforma tras la publicación de los cambios constituye aceptación de los mismos.
             </p>

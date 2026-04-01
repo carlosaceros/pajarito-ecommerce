@@ -261,7 +261,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         </div>
                                         <div>
                                             <span className="font-bold text-gray-700">Fabricante:</span>
-                                            <p className="text-gray-600">BioCambio 360 S.A.S.</p>
+                                            <p className="text-gray-600">Biocambio360 S.A.S.</p>
                                         </div>
                                         <div>
                                             <span className="font-bold text-gray-700">Origen:</span>

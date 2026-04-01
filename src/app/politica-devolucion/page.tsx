@@ -3,7 +3,7 @@ import LegalPageLayout from '@/components/LegalPageLayout';
 
 export const metadata: Metadata = {
     title: 'Política de Devolución | Pajarito',
-    description: 'Condiciones de devolución, cambio y reembolso de productos Pajarito de BioCambio 360 S.A.S.',
+    description: 'Condiciones de devolución, cambio y reembolso de productos Pajarito de Biocambio360 S.A.S.',
 };
 
 export default function PoliticaDevolucionPage() {
@@ -79,7 +79,7 @@ export default function PoliticaDevolucionPage() {
 
             <h2>6. Garantía de Productos</h2>
             <p>
-                Todos nuestros productos cuentan con garantía de calidad de BioCambio 360 S.A.S. conforme al
+                Todos nuestros productos cuentan con garantía de calidad de Biocambio360 S.A.S. conforme al
                 Estatuto del Consumidor. Si un producto no cumple con las especificaciones anunciadas, usted tiene
                 derecho a hacerlo efectivo contactándonos por cualquiera de los canales disponibles.
             </p>

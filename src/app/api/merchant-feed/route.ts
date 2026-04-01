@@ -49,7 +49,7 @@ export async function GET() {
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Pajarito - Aseo Industrial BioCambio 360</title>
+    <title>Pajarito - Aseo Industrial Biocambio360</title>
     <link>${BASE_URL}</link>
     <description>Productos de aseo industrial directo de fábrica. Envíos a toda Colombia.</description>
     ${items.join('\n')}

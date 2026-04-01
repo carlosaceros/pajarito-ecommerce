@@ -3,15 +3,15 @@ import LegalPageLayout from '@/components/LegalPageLayout';
 
 export const metadata: Metadata = {
     title: 'Garantías BioCambio | Pajarito',
-    description: 'Garantía de calidad industrial de los productos de aseo Pajarito fabricados por BioCambio 360 S.A.S.',
+    description: 'Garantía de calidad industrial de los productos de aseo Pajarito fabricados por Biocambio360 S.A.S.',
 };
 
 export default function GarantiasPage() {
     return (
-        <LegalPageLayout title="Garantías BioCambio 360" lastUpdated="16 de marzo de 2026">
+        <LegalPageLayout title="Garantías Biocambio360" lastUpdated="16 de marzo de 2026">
             <h2>Nuestro Compromiso de Calidad</h2>
             <p>
-                En <strong>BioCambio 360 S.A.S.</strong> fabricamos cada producto Pajarito bajo estrictos estándares
+                En <strong>Biocambio360 S.A.S.</strong> fabricamos cada producto Pajarito bajo estrictos estándares
                 de calidad industrial. Nuestra garantía respalda que cada producto que sale de nuestra fábrica en
                 Soacha cumple con las especificaciones técnicas anunciadas.
             </p>

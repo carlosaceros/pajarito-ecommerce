@@ -65,7 +65,7 @@ function baseTemplate(content: string): string {
               <tr>
                 <td style="background:linear-gradient(135deg,#e63946 0%,#c1121f 100%);padding:32px;text-align:center;">
                   <img src="https://www.productospajarito.com/images/logo.png" alt="Pajarito" height="48" style="max-height:48px;object-fit:contain;" />
-                  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;text-transform:uppercase;">Aseo Industrial · BioCambio 360</p>
+                  <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:13px;letter-spacing:2px;text-transform:uppercase;">Aseo Industrial · Biocambio360</p>
                 </td>
               </tr>
               <!-- Content -->
@@ -78,7 +78,7 @@ function baseTemplate(content: string): string {
               <tr>
                 <td style="background:#f9fafb;padding:24px 40px;border-top:1px solid #e5e7eb;text-align:center;">
                   <p style="margin:0;color:#9ca3af;font-size:12px;">
-                    © 2025 BioCambio 360 S.A.S. · Soacha, Cundinamarca<br>
+                    © 2025 Biocambio360 S.A.S. · Soacha, Cundinamarca<br>
                     <a href="https://www.productospajarito.com" style="color:#e63946;text-decoration:none;">productospajarito.com</a>
                   </p>
                 </td>

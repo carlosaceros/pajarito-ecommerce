@@ -69,7 +69,7 @@ const STEPS: Step[] = [
     {
         id: 6,
         title: '🎉 ¡Disfruta tu Producto!',
-        description: '¡Listo! Recibe tu producto directo de fábrica, sin intermediarios, con la calidad industrial de BioCambio 360. ¡Comparte tu experiencia y recomiéndanos!',
+        description: '¡Listo! Recibe tu producto directo de fábrica, sin intermediarios, con la calidad industrial de Biocambio360. ¡Comparte tu experiencia y recomiéndanos!',
         icon: <CheckCircle size={32} />,
         color: 'text-red-600',
         bgColor: 'bg-red-50',
@@ -351,7 +351,7 @@ export default function ComoComprarPage() {
 
             {/* Mini Footer */}
             <div className="max-w-4xl mx-auto px-4 pb-10 text-center text-xs text-gray-400">
-                © 2026 BioCambio 360 S.A.S. Todos los derechos reservados.
+                © 2026 Biocambio360 S.A.S. Todos los derechos reservados.
             </div>
         </div>
     );

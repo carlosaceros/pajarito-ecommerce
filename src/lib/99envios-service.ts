@@ -1,6 +1,6 @@
 const API_BASE = 'https://integration1.99envios.app/api/integration/v1';
 
-// Origen fijo de Pajarito (SOACHA/CUNDINAMARCA, sucursal BIOCAMBIO360)
+// Origen fijo de Pajarito (SOACHA/CUNDINAMARCA, sucursal Biocambio360)
 const ORIGEN = {
     codigo: '25754000',
     nombre: 'SOACHA',
@@ -64,7 +64,7 @@ export interface QuoteResult {
 
 /**
  * Cotiza el envío a una ciudad destino (por su código DANE 8 dígitos).
- * Usa el origen de la cuenta (SOACHA/BIOCAMBIO360).
+ * Usa el origen de la cuenta (SOACHA/Biocambio360).
  * @param destinoCodigo Código DANE 8 dígitos del destino (ej: "11001000")
  * @param destinoNombre Nombre de la ciudad destino
  * @param valorDeclarado Valor del pedido

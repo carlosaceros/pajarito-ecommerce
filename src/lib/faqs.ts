@@ -9,7 +9,7 @@ export const FAQS_GENERALES: FAQItem[] = [
     // Categoría: Producto (8 preguntas)
     {
         question: "¿Qué hace diferente a Pajarito de otras marcas de aseo?",
-        answer: "Somos fabricantes directos (BioCambio 360 S.A.S.) ubicados en Soacha, Cundinamarca. Eliminamos intermediarios vendiéndote al mismo precio que le vendemos a distribuidores mayoristas. Nuestra planta cuenta con certificación INVIMA y formulaciones de grado industrial usadas en hoteles, hospitales y lavanderías.",
+        answer: "Somos fabricantes directos (Biocambio360 S.A.S.) ubicados en Soacha, Cundinamarca. Eliminamos intermediarios vendiéndote al mismo precio que le vendemos a distribuidores mayoristas. Nuestra planta cuenta con certificación INVIMA y formulaciones de grado industrial usadas en hoteles, hospitales y lavanderías.",
         category: 'producto'
     },
     {

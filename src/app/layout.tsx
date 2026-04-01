@@ -9,10 +9,10 @@ const BASE_URL = 'https://www.productospajarito.com';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Pajarito - Aseo Industrial a Precio de Fábrica | BioCambio 360",
+    default: "Pajarito - Aseo Industrial a Precio de Fábrica | Biocambio360",
     template: "%s | Pajarito"
   },
-  description: "Detergente, Desengrasante, Suavizante y Blanqueador industrial en presentaciones de 3.8L, 10L y 20L. Calidad BioCambio 360, directo de fábrica. Envíos a toda Colombia.",
+  description: "Detergente, Desengrasante, Suavizante y Blanqueador industrial en presentaciones de 3.8L, 10L y 20L. Calidad Biocambio360, directo de fábrica. Envíos a toda Colombia.",
   keywords: [
     "detergente industrial colombia",
     "desengrasante industrial granel",
@@ -20,9 +20,13 @@ export const metadata: Metadata = {
     "aseo granel colombia",
     "blanqueador industrial",
     "suavizante ropa por mayor",
-    "BioCambio 360",
+    "Biocambio360",
     "pajarito aseo"
   ],
+  icons: {
+    icon: [{ url: '/favicon.png', type: 'image/png' }],
+    apple: '/favicon.png',
+  },
   verification: {
     google: ["D8korwn8MSRpH3qaGd1j5outfbLxO_WUtxe7Ok8vhz8", "htb2Q-eSNiKBROAxC3B3cERhsIdD7VD3qWmeUs8vYVw"],
   },
@@ -38,7 +42,7 @@ export const metadata: Metadata = {
         url: `${BASE_URL}/images/og-pajarito.png`,
         width: 1200,
         height: 630,
-        alt: "Pajarito Aseo Industrial - BioCambio 360"
+        alt: "Pajarito Aseo Industrial - Biocambio360"
       }
     ]
   },
@@ -66,7 +70,7 @@ export const metadata: Metadata = {
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "BioCambio 360 S.A.S.",
+  "name": "Biocambio360 S.A.S.",
   "alternateName": "Pajarito",
   "url": BASE_URL,
   "logo": `${BASE_URL}/images/logo.png`,
