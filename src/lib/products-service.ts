@@ -60,8 +60,15 @@ export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
         console.warn('[products-service] Firestore no disponible, usando catálogo local:', e);
     }
 
+    // Preserve the explicit order from PRODUCTOS, append any external products alphabetically
+    const orderMap = new Map<string, number>(PRODUCTOS.map((p, i) => [p.id, i]));
     const products = Array.from(localMap.values())
-        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+        .sort((a, b) => {
+            const indexA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999;
+            const indexB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999;
+            if (indexA !== indexB) return indexA - indexB;
+            return a.nombre.localeCompare(b.nombre);
+        });
 
     cachedProducts = products;
     lastFetchTime = Date.now();
