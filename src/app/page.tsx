@@ -5,9 +5,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ProductCard';
 import FAQSection from '@/components/FAQSection';
-import CartDrawer from '@/components/CartDrawer';
 import Toast from '@/components/Toast';
-import HeaderMessage from '@/components/HeaderMessage';
 import { Product } from '@/lib/products';
 import { getAllProducts } from '@/lib/products-service';
 import { useCart } from '@/lib/cart-context';
@@ -51,50 +49,6 @@ export default function Home() {
         onClose={() => setShowToast(false)}
       />
 
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between max-w-7xl">
-          <img src="/images/logo.png" alt="Pajarito" className="h-20" />
-          <HeaderMessage />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsCartOpen(true)}
-            className="relative p-3 text-gray-600 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 rounded-xl shadow-sm"
-          >
-            <ShoppingCart size={28} />
-            <AnimatePresence>
-              {getTotalItems() > 0 && (
-                <motion.span
-                  key={getTotalItems()}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 15
-                  }}
-                  className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-black min-w-[28px] h-7 rounded-full flex items-center justify-center border-3 border-white shadow-lg px-2"
-                  style={{ fontFamily: '"Archivo Black", sans-serif' }}
-                >
-                  <motion.span
-                    key={`count-${getTotalItems()}`}
-                    initial={{ scale: 1.5, rotate: 10 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    {getTotalItems()}
-                  </motion.span>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        </div>
-      </header>
-
-      {/* Cart Drawer */}
-      <CartDrawer />
       {/* Hero Section */}
       <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6">
         {/* Background: banner image — cover on mobile, zoomed on desktop to crop watermark */}

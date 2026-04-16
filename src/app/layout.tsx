@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
+import GlobalHeader from "@/components/GlobalHeader";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import "./globals.css";
 
 const BASE_URL = 'https://www.productospajarito.com';
@@ -111,7 +113,9 @@ export default function RootLayout({
       <body style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
         <AuthProvider>
           <CartProvider>
+            <GlobalHeader />
             {children}
+            <WhatsAppButton />
             <Analytics />
           </CartProvider>
         </AuthProvider>

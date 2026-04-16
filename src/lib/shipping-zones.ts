@@ -21,7 +21,7 @@ export const SOACHA_ZONE_CITIES = [
 
 // Umbrales de envío gratis (COP)
 export const FREE_SHIPPING_LOCAL = 100_000;   // Vecis Soachunos/as
-export const FREE_SHIPPING_NACIONAL = 180_000; // Resto del país
+export const FREE_SHIPPING_NACIONAL = Infinity; // Desactivado para Nacional
 
 // Tarifa plana nacional (Pajarito subsidia el excedente del flete real)
 export const TARIFA_PLANA_NACIONAL = 18_000;
@@ -117,3 +117,16 @@ export const PESO_MAX_BULTO_KG = PESO_MAX_PAQUETE_KG;
 export const isVecinoSoachuno = isVeciSoacha;
 /** @deprecated Usa isVeciSoachaByCityName */
 export const isVecinoSoachunoByCityName = isVeciSoachaByCityName;
+
+/**
+ * Calcula el subsidio Pajarito fijo basado en el totalWeightKg
+ * Comienza en $1.000 para 1 KG. Escala a $35.000 a los 39 KG. Caen a $24.000 a partir de 40 KG.
+ */
+export function calcularSubsidio(totalWeightKg: number): number {
+    if (totalWeightKg <= 0) return 0;
+    if (totalWeightKg < 1) return 1000;
+    if (totalWeightKg >= 40) return 24000;
+    
+    // Entre 1kg y 39kg interpolación lineal (1000 -> 35000)
+    return Math.round(1000 + ((totalWeightKg - 1) * 34000) / 38);
+}

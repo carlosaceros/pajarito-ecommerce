@@ -8,7 +8,7 @@ export interface FAQ {
  * Todos los tamaños disponibles en la plataforma.
  * Los "extra" (250ml, 500ml, 1L) aplican solo a algunos productos.
  */
-export type ProductSize = '250ml' | '500ml' | '1L' | '3.8L' | '10L' | '20L';
+export type ProductSize = '1L' | '3.8L' | '10L' | '20L';
 
 export interface Product {
     id: string;
@@ -28,12 +28,10 @@ export interface Product {
 }
 
 /** Orden canónico de tamaños en la UI */
-export const SIZE_ORDER: ProductSize[] = ['250ml', '500ml', '1L', '3.8L', '10L', '20L'];
+export const SIZE_ORDER: ProductSize[] = ['1L', '3.8L', '10L', '20L'];
 
 /** Peso exacto en kg por tamaño (líquidos de densidad ≈1 kg/L) */
 export const PESOS_POR_TALLA: Record<ProductSize, number> = {
-    '250ml': 0.25,
-    '500ml': 0.5,
     '1L': 1.0,
     '3.8L': 3.8,
     '10L': 10.0,
@@ -59,46 +57,16 @@ export const PRODUCTOS: Product[] = [
         ],
         // Catálogo 2026 — PRD Logística Pajarito
         precios: {
-            '250ml': 3_500,
             '1L': 10_000,
             '3.8L': 27_000,
             '10L': 43_000,
             '20L': 63_000,
         },
         competidorPromedio: {
-            '250ml': 6_000,
             '1L': 16_000,
             '3.8L': 38_000,
             '10L': 58_000,
             '20L': 86_000,
-        },
-    },
-    {
-        id: 'desengrasante',
-        nombre: 'Desengrasante Rojo',
-        slogan: 'Arranca grasa al instante',
-        descripcion: 'El terror de la grasa. Fórmula activa para cocinas industriales, motores, pisos de taller y juntas de cerámica.',
-        imgFile: 'PAJARITO_DESENGRASANTE%20ROJO_10L.png',
-        imgFileSmall: 'PAJARITO_DESENGRASANTE galón_octubre 2025.webp',
-        beneficios: ['Multiusos Potente', 'Acción Inmediata', 'Biodegradable'],
-        badge: 'PODER TOTAL',
-        color: 'bg-red-600',
-        faqs: [
-            { q: '¿Daña el aluminio?', a: 'El producto es alcalino. Para aluminio o teflón, diluir 1 parte de producto en 5 de agua y enjuagar rápido.' },
-            { q: '¿Sirve para ropa?', a: 'Excelente para cuellos y puños o grasa mecánica en overoles. Aplicar directo 5 min antes del lavado.' },
-            { q: '¿Tiene registro sanitario?', a: 'Sí, cumplimos con normatividad INVIMA para productos de aseo industrial y doméstico línea desengrasante.' },
-            { q: '¿Quita cochambre de estufas?', a: 'Es su especialidad. Aplique puro sobre la plancha o estufa caliente (60°C), deje actuar 10 min y retire con esponja.' }
-        ],
-        // Catálogo 2026 — PRD Logística Pajarito
-        precios: {
-            '3.8L': 27_000,
-            '10L': 43_000,
-            '20L': 63_000,
-        },
-        competidorPromedio: {
-            '3.8L': 42_000,
-            '10L': 68_000,
-            '20L': 98_000,
         },
     },
     {
@@ -118,14 +86,12 @@ export const PRODUCTOS: Product[] = [
         ],
         // Catálogo 2026 — PRD Logística Pajarito
         precios: {
-            '500ml': 5_500,
             '1L': 10_000,
             '3.8L': 27_000,
             '10L': 43_000,
             '20L': 63_000,
         },
         competidorPromedio: {
-            '500ml': 9_000,
             '1L': 17_000,
             '3.8L': 38_000,
             '10L': 58_000,
@@ -158,6 +124,34 @@ export const PRODUCTOS: Product[] = [
             '3.8L': 24_000,
             '10L': 42_000,
             '20L': 68_000,
+        },
+    },
+    {
+        id: 'desengrasante',
+        nombre: 'Desengrasante Rojo',
+        slogan: 'Arranca grasa al instante',
+        descripcion: 'El terror de la grasa. Fórmula activa para cocinas industriales, motores, pisos de taller y juntas de cerámica.',
+        imgFile: 'PAJARITO_DESENGRASANTE%20ROJO_10L.png',
+        imgFileSmall: 'PAJARITO_DESENGRASANTE galón_octubre 2025.webp',
+        beneficios: ['Multiusos Potente', 'Acción Inmediata', 'Biodegradable'],
+        badge: 'PODER TOTAL',
+        color: 'bg-red-600',
+        faqs: [
+            { q: '¿Daña el aluminio?', a: 'El producto es alcalino. Para aluminio o teflón, diluir 1 parte de producto en 5 de agua y enjuagar rápido.' },
+            { q: '¿Sirve para ropa?', a: 'Excelente para cuellos y puños o grasa mecánica en overoles. Aplicar directo 5 min antes del lavado.' },
+            { q: '¿Tiene registro sanitario?', a: 'Sí, cumplimos con normatividad INVIMA para productos de aseo industrial y doméstico línea desengrasante.' },
+            { q: '¿Quita cochambre de estufas?', a: 'Es su especialidad. Aplique puro sobre la plancha o estufa caliente (60°C), deje actuar 10 min y retire con esponja.' }
+        ],
+        // Catálogo 2026 — PRD Logística Pajarito
+        precios: {
+            '3.8L': 27_000,
+            '10L': 43_000,
+            '20L': 63_000,
+        },
+        competidorPromedio: {
+            '3.8L': 42_000,
+            '10L': 68_000,
+            '20L': 98_000,
         },
     }
 ];

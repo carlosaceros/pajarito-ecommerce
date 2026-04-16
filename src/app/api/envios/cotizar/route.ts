@@ -20,6 +20,7 @@ import {
     calcularBultos,
     calcularCostoConBultos,
     PESO_MAX_BULTO_KG,
+    calcularSubsidio,
 } from '@/lib/shipping-zones';
 
 const CONFIG_DOC_PATH = 'admin_config/shipping';
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
         const umbralGratis = esVecino ? FREE_SHIPPING_LOCAL : FREE_SHIPPING_NACIONAL;
         const tarifaBase = esVecino ? TARIFA_LOCAL : TARIFA_PLANA_NACIONAL;
         const bultos = calcularBultos(totalWeightKg);
+        const subsidio = calcularSubsidio(totalWeightKg);
 
         // --- 1. Envío gratis ---
         if (subtotal && subtotal >= umbralGratis) {
@@ -131,10 +133,13 @@ export async function POST(request: Request) {
 
             const costoUnBulto = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
             const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
+            
+            // Aplicar subsidio al total
+            const precioConSubsidio = Math.max(0, costoBultos.costo - subsidio);
 
             return NextResponse.json({
-                gratis: false,
-                precio: costoBultos.costo,
+                gratis: precioConSubsidio === 0,
+                precio: precioConSubsidio,
                 precioBase: quote.cheapest.valor,
                 valorContrapago: quote.cheapest.valor_contrapago,
                 transportadora: quote.cheapest.transportadora,
@@ -145,6 +150,7 @@ export async function POST(request: Request) {
                 mensajePaquete: costoBultos.mensajePaquete,
                 source: '99envios',
                 cotizaciones: quote.all,
+                subsidioAplicado: subsidio,
             });
         } catch (enviosError: any) {
             console.warn('[Cotizar] 99 Envíos falló, usando fallback:', enviosError.message);
@@ -163,10 +169,11 @@ export async function POST(request: Request) {
         }
 
         const costoBultos = calcularCostoConBultos(fallback.precio, totalWeightKg, false);
+        const precioConSubsidio = Math.max(0, costoBultos.costo - subsidio);
 
         return NextResponse.json({
-            gratis: false,
-            precio: costoBultos.costo,
+            gratis: precioConSubsidio === 0,
+            precio: precioConSubsidio,
             transportadora: null,
             dias: '3-7',
             bultos,
@@ -179,6 +186,7 @@ export async function POST(request: Request) {
                 ? 'En Pajarito subsidiamos parte de tu envío nacional para que ahorres comprando directo de fábrica.'
                 : undefined,
             mensaje: '* Precio estimado. El costo exacto se confirma al despachar.',
+            subsidioAplicado: subsidio,
         });
 
     } catch (error: any) {

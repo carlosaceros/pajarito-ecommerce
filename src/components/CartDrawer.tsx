@@ -7,7 +7,7 @@ import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/products';
 import { Truck, Sparkles } from 'lucide-react';
 import PaqueteUpsell from './PaqueteUpsell';
-import { FREE_SHIPPING_LOCAL, FREE_SHIPPING_NACIONAL } from '@/lib/shipping-zones';
+import { FREE_SHIPPING_LOCAL } from '@/lib/shipping-zones';
 
 /**
  * CartDrawer — PRD 2026
@@ -23,15 +23,9 @@ export default function CartDrawer() {
     const totalSavings = getTotalSavings();
     const totalKg = getTotalWeightKg();
 
-    // En el carrito no conocemos aún la zona del cliente.
-    // Usamos el umbral más alto ($180k) como meta motivadora,
-    // con un sub-mensaje que aclara el beneficio Soachuno.
-    const threshold = FREE_SHIPPING_NACIONAL;
-    const progress = Math.min((totalPrice / threshold) * 100, 100);
-    const amountToFreeShipping = threshold - totalPrice;
-
-    // Umbral local para segundo mensaje motivador
+    // Umbral local para mensaje motivador
     const progressLocal = Math.min((totalPrice / FREE_SHIPPING_LOCAL) * 100, 100);
+    const amountToFreeShippingLocal = FREE_SHIPPING_LOCAL - totalPrice;
 
     return (
         <AnimatePresence>
@@ -74,28 +68,22 @@ export default function CartDrawer() {
                             </motion.button>
                         </div>
 
-                        {/* Envío gratis progress */}
+                        {/* Envío gratis progress (Solo local) */}
                         {cart.length > 0 && (
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Truck size={18} className={progress >= 100 ? "text-green-600" : "text-gray-500"} />
+                                    <Truck size={18} className={progressLocal >= 100 ? "text-green-600" : "text-gray-500"} />
                                     <p className="text-sm font-bold text-gray-800">
-                                        {progress >= 100 ? (
-                                            <span className="text-green-600">
-                                                ¡Envío GRATIS nacional conseguido! 🎉
-                                            </span>
-                                        ) : progressLocal >= 100 ? (
+                                        {progressLocal >= 100 ? (
                                             <span>
-                                                ✅ <span className="text-green-700">Gratis si eres de Soacha/sur Bogotá</span> · Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para gratis nacional
+                                                ✅ <span className="text-green-700">¡Envío GRATIS Local conseguido! 🎉</span>
                                             </span>
                                         ) : (
                                             <span>
-                                                Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShipping)}</span> para envío GRATIS nacional
-                                                {totalPrice >= FREE_SHIPPING_LOCAL * 0.7 && (
-                                                    <span className="block text-[11px] text-emerald-600 font-normal mt-0.5">
-                                                        🏘️ ¿Eres de Soacha o sur de Bogotá? Gratis desde {formatCurrency(FREE_SHIPPING_LOCAL)}
-                                                    </span>
-                                                )}
+                                                Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShippingLocal)}</span> para envío GRATIS Local
+                                                <span className="block text-[11px] text-gray-500 font-normal mt-0.5">
+                                                    *Solo aplica para Soacha y sur de Bogotá
+                                                </span>
                                             </span>
                                         )}
                                     </p>
@@ -103,9 +91,9 @@ export default function CartDrawer() {
                                 <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: `${progress}%` }}
+                                        animate={{ width: `${progressLocal}%` }}
                                         transition={{ duration: 0.5, ease: "easeOut" }}
-                                        className={`h-full rounded-full ${progress >= 100 ? 'bg-green-500' : 'bg-red-500'}`}
+                                        className={`h-full rounded-full ${progressLocal >= 100 ? 'bg-green-500' : 'bg-red-500'}`}
                                     />
                                 </div>
                             </div>
@@ -291,9 +279,7 @@ export default function CartDrawer() {
                                     </motion.button>
                                 </Link>
                                 <p className="text-xs text-gray-400 text-center">
-                                    {progress >= 100
-                                        ? '¡El envío a toda Colombia es GRATIS para este pedido!'
-                                        : 'El costo de envío se calculará en el siguiente paso'}
+                                    El costo de envío se calculará en el siguiente paso
                                 </p>
                             </motion.div>
                         )}
