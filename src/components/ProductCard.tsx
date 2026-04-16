@@ -111,7 +111,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
             <div className="p-5 flex-1 flex flex-col relative z-20 bg-white">
                 <div className="mb-1">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Línea Industrial</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Poder Industrial • Uso Hogar</span>
                     <h3 className="text-gray-900 font-black text-xl leading-tight" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
                         {product.nombre}
                     </h3>
