@@ -15,8 +15,6 @@ interface ProductCardProps {
 
 // Badge mostrado en la foto para cada tamaño
 const SIZE_PHOTO_BADGE: Partial<Record<ProductSize, { label: string; bg: string } | null>> = {
-    '250ml': { label: '250 ml', bg: 'bg-violet-600' },
-    '500ml': { label: '500 ml', bg: 'bg-purple-600' },
     '1L': { label: '1 Litro', bg: 'bg-indigo-600' },
     '3.8L': null,
     '10L': { label: '10 Litros', bg: 'bg-blue-600' },
@@ -24,7 +22,7 @@ const SIZE_PHOTO_BADGE: Partial<Record<ProductSize, { label: string; bg: string 
 };
 
 // Imagen de galón aplica para tamaños pequeños también
-const SMALL_SIZES: ProductSize[] = ['250ml', '500ml', '1L', '3.8L'];
+const SMALL_SIZES: ProductSize[] = ['1L', '3.8L'];
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
     // Determinar el tamaño inicial: preferir 3.8L si existe, sino el primero disponible

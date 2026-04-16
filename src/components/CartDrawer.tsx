@@ -136,7 +136,7 @@ export default function CartDrawer() {
                                                         className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
                                                     >
                                                         <img
-                                                            src={`/images/${(item.size === '3.8L' || item.size === '1L' || item.size === '500ml' || item.size === '250ml') && item.product.imgFileSmall ? item.product.imgFileSmall : item.product.imgFile}`}
+                                                            src={`/images/${(item.size === '3.8L' || item.size === '1L') && item.product.imgFileSmall ? item.product.imgFileSmall : item.product.imgFile}`}
                                                             alt={item.product.nombre}
                                                             className="w-full h-full object-contain p-2"
                                                         />
