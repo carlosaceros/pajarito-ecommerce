@@ -9,12 +9,12 @@ const BASE_URL = 'https://www.productospajarito.com';
  * Example: "Detergente Ropa" -> "detergente-ropa-industrial"
  */
 export function generateProductSlug(id: string, nombre: string): string {
-    // Mapeo de IDs a términos descriptivos adicionales para SEO
+    // Mapeo de IDs a términos descriptivos de alto valor (AEO/SEO) para hogar
     const seoTerms: Record<string, string> = {
-        'detergente': 'industrial',
-        'desengrasante': 'multiusos',
-        'suavizante': 'textil-ropa',
-        'blanqueador': 'desinfectante'
+        'detergente': 'alto-rendimiento-hogar',
+        'desengrasante': 'arranca-grasa-extremo',
+        'suavizante': 'maxima-suavidad-aroma',
+        'blanqueador': 'desinfeccion-total'
     };
 
     const baseName = nombre
@@ -34,7 +34,19 @@ export function generateProductSlug(id: string, nombre: string): string {
  */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
     const products = await getAllProducts();
-    return products.find(p => generateProductSlug(p.id, p.nombre) === slug) || null;
+    return products.find(p => {
+        const currentSlug = generateProductSlug(p.id, p.nombre);
+        
+        // Base name without SEO terms to ensure backward compatibility with old URLs
+        const baseName = p.nombre
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+            
+        return currentSlug === slug || slug.startsWith(baseName);
+    }) || null;
 }
 
 /**
@@ -57,8 +69,8 @@ export function generateProductMetadata(product: Product, size?: string): Metada
     const pricePerMl = priceNum > 0 ? (price / priceNum / (selectedSize.endsWith('ml') ? 1 : 1000)).toFixed(2) : '0.00';
 
     // SEO-optimized title with long-tail keywords
-    const title = `${product.nombre} ${selectedSize} Industrial - $${price.toLocaleString('es-CO')} | Pajarito`;
-    const description = `Compra ${product.nombre} ${selectedSize} industrial a $${price.toLocaleString('es-CO')}. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia Biocambio360.`;
+    const title = `${product.nombre} ${selectedSize} - Rendimiento Superior | Pajarito`;
+    const description = `Compra ${product.nombre} ${selectedSize} a $${price.toLocaleString('es-CO')}. Calidad industrial segura para tu hogar. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia Biocambio360.`;
     const absoluteImageUrl = `${BASE_URL}/images/${product.imgFile.replace(/%20/g, ' ')}`;
 
     return {

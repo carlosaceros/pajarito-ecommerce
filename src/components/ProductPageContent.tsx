@@ -60,8 +60,8 @@ export default function ProductPageContent({ product, relatedProducts }: Product
             />
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                {/* Sticky header with breadcrumb + cart */}
-                <header className="bg-white border-b shadow-sm sticky top-0 z-50">
+                {/* Header with breadcrumb + cart */}
+                <header className="bg-white border-b shadow-sm relative z-40">
                     <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
                         <nav className="flex items-center gap-2 text-sm text-gray-500">
                             <Link href="/" className="hover:text-red-600 transition-colors">Inicio</Link>
@@ -169,7 +169,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                         >
                             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-lg sticky top-4">
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                    Línea Industrial
+                                    Poder Industrial • Uso Hogar
                                 </span>
                                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 mt-2 mb-4" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
                                     {product.nombre}

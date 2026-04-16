@@ -44,11 +44,14 @@ export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
             const local = localMap.get(firestoreData.id);
             if (local) {
                 // Merge: Firestore solo sobreescribe si tiene campos propios (admin customization)
-                // Los precios del local SIEMPRE ganan (fuente de verdad 2026)
+                // Los textos y precios del local SIEMPRE ganan (fuente de verdad 2026)
                 localMap.set(firestoreData.id, {
                     ...firestoreData,
                     precios: local.precios,
                     competidorPromedio: local.competidorPromedio,
+                    descripcion: local.descripcion,
+                    beneficios: local.beneficios,
+                    slogan: local.slogan,
                 });
             } else {
                 // Producto creado solo en Firestore (por el admin), se agrega tal cual
