@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getAllProducts } from '@/lib/products-service';
 import { generateProductSlug } from '@/lib/product-utils';
+import { BLOG_POSTS } from '@/lib/blog-data';
 
 const BASE_URL = 'https://www.productospajarito.com';
 
@@ -14,12 +15,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.9,
     }));
 
+    const blogUrls: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+        url: `${BASE_URL}/blog/${post.slug}`,
+        lastModified: new Date(post.fecha),
+        changeFrequency: 'monthly',
+        priority: 0.8,
+    }));
+
     const staticUrls: MetadataRoute.Sitemap = [
         {
             url: BASE_URL,
             lastModified: new Date(),
             changeFrequency: 'daily',
             priority: 1.0,
+        },
+        {
+            url: `${BASE_URL}/blog`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.9,
         },
         {
             url: `${BASE_URL}/como-comprar`,
@@ -59,5 +73,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ];
 
-    return [...staticUrls, ...productUrls];
+    return [...staticUrls, ...productUrls, ...blogUrls];
 }

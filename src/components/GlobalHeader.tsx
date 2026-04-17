@@ -24,41 +24,51 @@ export default function GlobalHeader() {
           <Link href="/">
             <img src="/images/logo.png" alt="Pajarito" className="h-32 object-contain" />
           </Link>
-          <HeaderMessage />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsCartOpen(true)}
-            className="relative p-3 text-gray-600 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 rounded-xl shadow-sm"
-          >
-            <ShoppingCart size={28} />
-            <AnimatePresence>
-              {getTotalItems() > 0 && (
-                <motion.span
-                  key={getTotalItems()}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 15
-                  }}
-                  className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-black min-w-[28px] h-7 rounded-full flex items-center justify-center border-3 border-white shadow-lg px-2"
-                  style={{ fontFamily: '"Archivo Black", sans-serif' }}
-                >
+          <div className="hidden lg:block">
+            <HeaderMessage />
+          </div>
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/blog" 
+              className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-red-600 transition-colors uppercase tracking-widest px-2"
+            >
+              📖 <span className="hidden sm:inline">Me lo dijo un pajarito</span>
+            </Link>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-3 text-gray-600 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 rounded-xl shadow-sm"
+            >
+              <ShoppingCart size={28} />
+              <AnimatePresence>
+                {getTotalItems() > 0 && (
                   <motion.span
-                    key={`count-${getTotalItems()}`}
-                    initial={{ scale: 1.5, rotate: 10 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    key={getTotalItems()}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 15
+                    }}
+                    className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-xs font-black min-w-[28px] h-7 rounded-full flex items-center justify-center border-3 border-white shadow-lg px-2"
+                    style={{ fontFamily: '"Archivo Black", sans-serif' }}
                   >
-                    {getTotalItems()}
+                    <motion.span
+                      key={`count-${getTotalItems()}`}
+                      initial={{ scale: 1.5, rotate: 10 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      {getTotalItems()}
+                    </motion.span>
                   </motion.span>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
       </header>
 

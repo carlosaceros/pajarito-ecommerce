@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp, Info, ListChecks, ShieldAlert, Lightbulb, CheckCircle, HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -174,9 +174,20 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 mt-2 mb-4" style={{ fontFamily: '"Archivo Black", sans-serif' }}>
                                     {product.nombre}
                                 </h1>
-                                <p className="text-gray-600 mb-6 leading-relaxed">
-                                    {product.descripcion}
+                                <p className="text-gray-600 mb-4 leading-relaxed">
+                                    {product.heroText || product.descripcion}
                                 </p>
+                                {product.heroBullets && product.heroBullets.length > 0 && (
+                                    <ul className="space-y-2 mb-6">
+                                        {product.heroBullets.map((bullet, idx) => (
+                                            <li key={idx} className="flex gap-2 text-sm text-gray-700">
+                                                <div className="text-red-500 font-black mt-0.5">•</div>
+                                                <span>{bullet}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                {!product.heroBullets && <div className="mb-6"></div>}
 
                                 {/* Size Selector */}
                                 <div className="mb-6">
@@ -282,13 +293,178 @@ export default function ProductPageContent({ product, relatedProducts }: Product
 
                     {/* Expandable Sections */}
                     <div className="max-w-4xl mx-auto mb-16 space-y-4">
+                        {/* SEO Description */}
+                        {product.descripcionLarga && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <button
+                                    onClick={() => toggleSection('descripcion')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Info className="text-red-600" />
+                                        <h3 className="text-xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
+                                    </div>
+                                    {expandedSection === 'descripcion' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'descripcion' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
+                                        <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line">
+                                            {product.descripcionLarga}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Beneficios Detallados */}
+                        {product.beneficiosDetallados && product.beneficiosDetallados.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <button
+                                    onClick={() => toggleSection('beneficios')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <CheckCircle className="text-green-600" />
+                                        <h3 className="text-xl font-black text-gray-900">Beneficios Principales</h3>
+                                    </div>
+                                    {expandedSection === 'beneficios' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'beneficios' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {product.beneficiosDetallados.map((ben, i) => (
+                                            <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                                <h4 className="font-bold text-gray-900 mb-2">{ben.titulo}</h4>
+                                                <p className="text-sm text-gray-600">{ben.texto}</p>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Modo de Uso */}
+                        {product.modoDeUso && product.modoDeUso.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <button
+                                    onClick={() => toggleSection('modoDeUso')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <ListChecks className="text-blue-600" />
+                                        <h3 className="text-xl font-black text-gray-900">Modo de Uso y Dosis</h3>
+                                    </div>
+                                    {expandedSection === 'modoDeUso' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'modoDeUso' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-6">
+                                        {product.modoDeUso.map((seccion, i) => (
+                                            <div key={i}>
+                                                <h4 className="font-bold text-gray-800 mb-3">{seccion.titulo}</h4>
+                                                <ul className="list-none space-y-2">
+                                                    {seccion.pasos.map((paso, j) => (
+                                                        <li key={j} className="flex gap-2 text-gray-600 text-sm">
+                                                            <div className="font-black text-blue-600 mt-0.5">•</div>
+                                                            <span>{paso}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Casos de Uso */}
+                        {product.casosDeUso && product.casosDeUso.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <button
+                                    onClick={() => toggleSection('casosDeUso')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Lightbulb className="text-yellow-500" />
+                                        <h3 className="text-xl font-black text-gray-900">Casos de Uso Ideales</h3>
+                                    </div>
+                                    {expandedSection === 'casosDeUso' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'casosDeUso' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
+                                        <p className="font-medium text-gray-800 mb-3">Este producto es ideal si buscas:</p>
+                                        <ul className="space-y-2">
+                                            {product.casosDeUso.map((caso, i) => (
+                                                <li key={i} className="flex gap-2 text-gray-600 text-sm items-center">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400"></div>
+                                                    <span>{caso}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Precauciones */}
+                        {product.precauciones && product.precauciones.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-l-4 border-red-500">
+                                <button
+                                    onClick={() => toggleSection('precauciones')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-red-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <ShieldAlert className="text-red-500" />
+                                        <h3 className="text-xl font-black text-gray-900">Precauciones Importantes</h3>
+                                    </div>
+                                    {expandedSection === 'precauciones' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'precauciones' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
+                                        <div className="bg-red-50 p-4 rounded-xl text-red-800 text-sm font-medium space-y-2 border border-red-100">
+                                            {product.precauciones.map((p, i) => (
+                                                <div key={i} className="flex gap-2.5">
+                                                    <span>⚠️</span>
+                                                    <span>{p}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* FAQs */}
+                        {product.faqs && product.faqs.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                                <button
+                                    onClick={() => toggleSection('faqs')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <HelpCircle className="text-indigo-600" />
+                                        <h3 className="text-xl font-black text-gray-900">Preguntas Frecuentes</h3>
+                                    </div>
+                                    {expandedSection === 'faqs' ? <ChevronUp /> : <ChevronDown />}
+                                </button>
+                                {expandedSection === 'faqs' && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-4">
+                                        {product.faqs.map((faq, i) => (
+                                            <div key={i} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                                                <h4 className="font-bold text-gray-900 mb-1">{faq.q}</h4>
+                                                <p className="text-sm text-gray-600">{faq.a}</p>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Technical Sheet */}
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full">
                             <button
                                 onClick={() => toggleSection('ficha')}
                                 className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
                             >
-                                <h3 className="text-xl font-black text-gray-900">Ficha Técnica</h3>
+                                <h3 className="text-xl font-black text-gray-900">Ficha Técnica y Especificaciones</h3>
                                 {expandedSection === 'ficha' ? <ChevronUp /> : <ChevronDown />}
                             </button>
                             {expandedSection === 'ficha' && (
@@ -297,7 +473,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                     animate={{ height: 'auto' }}
                                     className="px-6 pb-6"
                                 >
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm w-full">
                                         <div>
                                             <span className="font-bold text-gray-700">Presentaciones:</span>
                                             <p className="text-gray-600">3.8L, 10L, 20L</p>
@@ -310,10 +486,12 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                             <span className="font-bold text-gray-700">Origen:</span>
                                             <p className="text-gray-600">Soacha, Colombia</p>
                                         </div>
-                                        <div>
-                                            <span className="font-bold text-gray-700">Uso:</span>
-                                            <p className="text-gray-600">Industrial y Doméstico</p>
-                                        </div>
+                                        {product.especificaciones && product.especificaciones.map((spec, i) => (
+                                            <div key={i}>
+                                                <span className="font-bold text-gray-700">{spec.clave}:</span>
+                                                <p className="text-gray-600">{spec.valor}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </motion.div>
                             )}

@@ -68,9 +68,15 @@ export function generateProductMetadata(product: Product, size?: string): Metada
     const priceNum = parseFloat(selectedSize.replace('L', '').replace('ml', ''));
     const pricePerMl = priceNum > 0 ? (price / priceNum / (selectedSize.endsWith('ml') ? 1 : 1000)).toFixed(2) : '0.00';
 
-    // SEO-optimized title with long-tail keywords
-    const title = `${product.nombre} ${selectedSize} - Rendimiento Superior | Pajarito`;
-    const description = `Compra ${product.nombre} ${selectedSize} a $${price.toLocaleString('es-CO')}. Calidad industrial segura para tu hogar. ${product.descripcion} Costo por ml: $${pricePerMl}/ml. ${product.slogan}. Envíos Colombia Biocambio360.`;
+    // SEO-optimized title using new fields if available
+    const baseTitle = product.seoTitle || `${product.nombre} ${selectedSize} - Rendimiento Superior`;
+    const title = `${baseTitle} | Pajarito`;
+    
+    // SEO-optimized description using new fields if available
+    // We add the price information to the provided description to keep the dynamic aspect
+    const baseDesc = product.seoDescription || `Calidad industrial segura para tu hogar. ${product.descripcion} ${product.slogan}.`;
+    const description = `Compra ${product.nombre} ${selectedSize} a $${price.toLocaleString('es-CO')}. ${baseDesc} Costo por ml: $${pricePerMl}/ml. Envíos Colombia Biocambio360.`;
+    
     const absoluteImageUrl = `${BASE_URL}/images/${product.imgFile.replace(/%20/g, ' ')}`;
 
     return {
@@ -78,14 +84,13 @@ export function generateProductMetadata(product: Product, size?: string): Metada
         description,
         keywords: [
             product.nombre.toLowerCase(),
-            `${product.nombre.toLowerCase()} industrial`,
+            `${product.nombre.toLowerCase()} hogar`,
+            `${product.nombre.toLowerCase()} alto rendimiento`,
             `${product.nombre.toLowerCase()} ${selectedSize}`,
-            `${product.nombre.toLowerCase()} granel`,
-            `${product.nombre.toLowerCase()} por mayor`,
-            'aseo granel colombia',
-            'productos limpieza por mayor',
-            'biocambio360',
-            'pajarito aseo',
+            `${product.nombre.toLowerCase()} seguro`,
+            'aseo hogar colombia',
+            'productos limpieza premium',
+            'pajarito aseo rinde mas',
             slug,
             ...product.beneficios.map(b => b.toLowerCase())
         ],
@@ -95,13 +100,13 @@ export function generateProductMetadata(product: Product, size?: string): Metada
             type: 'website',
             locale: 'es_CO',
             url: `${BASE_URL}/producto/${slug}`,
-            siteName: 'Pajarito - Aseo Industrial',
+            siteName: 'Pajarito - Rinde Más',
             images: [
                 {
                     url: absoluteImageUrl,
                     width: 800,
                     height: 800,
-                    alt: `${product.nombre} ${selectedSize} Industrial - Pajarito Biocambio360`
+                    alt: `${product.nombre} ${selectedSize} - Pajarito Rinde Más`
                 }
             ]
         },
@@ -197,11 +202,19 @@ export function generateProductSchema(product: Product, size: string = '10L') {
         };
     });
 
+    const additionalProperty = product.especificaciones 
+        ? product.especificaciones.map(spec => ({
+            "@type": "PropertyValue",
+            "name": spec.clave,
+            "value": spec.valor
+        }))
+        : [];
+
     return {
         "@context": "https://schema.org",
         "@type": "Product",
-        "name": `${product.nombre} Industrial`,
-        "description": product.descripcion,
+        "name": product.seoTitle || `${product.nombre} Hogar`,
+        "description": product.seoDescription || product.descripcion,
         "image": absoluteImageUrl,
         "brand": {
             "@type": "Brand",
@@ -221,8 +234,9 @@ export function generateProductSchema(product: Product, size: string = '10L') {
             }
         },
         "sku": product.id.toUpperCase(),
-        "category": "Productos de Limpieza Industrial",
+        "category": "Productos de Limpieza Hogar Alto Rendimiento",
         "offers": offers,
+        "additionalProperty": additionalProperty.length > 0 ? additionalProperty : undefined
     };
 }
 
