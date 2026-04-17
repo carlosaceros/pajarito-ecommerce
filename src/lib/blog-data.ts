@@ -34,7 +34,7 @@ export const BLOG_POSTS: BlogPost[] = [
         relatedProductId: 'detergente',
         relatedProductAnchor: 'Detergente ropa alto rendimiento hogar',
         fecha: '2026-04-16',
-        imagen: '/images/PAJARITO_DETERGENTE ROPA Galón.webp'
+        imagen: '/images/blog_detergente.png'
     },
     {
         slug: 'suavizante-ropa-suavidad-aroma-menos-residuos',
@@ -58,7 +58,7 @@ export const BLOG_POSTS: BlogPost[] = [
         relatedProductId: 'suavizante',
         relatedProductAnchor: 'Suavizante textil máxima suavidad aroma',
         fecha: '2026-04-16',
-        imagen: '/images/PAJARITO_SUAVIZANTE Galón.webp'
+        imagen: '/images/blog_suavizante.png'
     },
     {
         slug: 'como-usar-blanqueador-casa-seguridad',
@@ -82,7 +82,7 @@ export const BLOG_POSTS: BlogPost[] = [
         relatedProductId: 'blanqueador',
         relatedProductAnchor: 'Blanqueador desinfección total hipoclorito',
         fecha: '2026-04-16',
-        imagen: '/images/PAJARITO_BLANQUEADOR Galón.webp'
+        imagen: '/images/blog_blanqueador.png'
     },
     {
         slug: 'desengrasante-cocina-quitar-grasa-cochambre',
@@ -106,6 +106,6 @@ export const BLOG_POSTS: BlogPost[] = [
         relatedProductId: 'desengrasante',
         relatedProductAnchor: 'Desengrasante rojo arranca grasa extremo',
         fecha: '2026-04-16',
-        imagen: '/images/PAJARITO_DESENGRASANTE galón_octubre 2025.webp'
+        imagen: '/images/blog_desengrasante.png'
     }
 ];
