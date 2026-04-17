@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp, Info, ListChecks, ShieldAlert, Lightbulb, CheckCircle, HelpCircle } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp, Info, ListChecks, ShieldAlert, Lightbulb, CheckCircle, HelpCircle, Bot, Link as LinkIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -32,7 +32,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
     const [selectedSize, setSelectedSize] = useState<ProductSize>('3.8L');
     const [quantity, setQuantity] = useState(1);
     const [showToast, setShowToast] = useState(false);
-    const [expandedSection, setExpandedSection] = useState<string | null>('ficha');
+    const [expandedSections, setExpandedSections] = useState<string[]>(['descripcion', 'beneficios', 'aeo']);
 
     const savingsData = calcularAhorro(
         product.precios[selectedSize] ?? 0,
@@ -46,7 +46,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
     };
 
     const toggleSection = (section: string) => {
-        setExpandedSection(expandedSection === section ? null : section);
+        setExpandedSections(prev => 
+            prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+        );
     };
 
     return (
@@ -304,9 +306,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <Info className="text-red-600" />
                                         <h3 className="text-xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
                                     </div>
-                                    {expandedSection === 'descripcion' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('descripcion') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'descripcion' && (
+                                {expandedSections.includes('descripcion') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
                                         <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line">
                                             {product.descripcionLarga}
@@ -327,9 +329,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <CheckCircle className="text-green-600" />
                                         <h3 className="text-xl font-black text-gray-900">Beneficios Principales</h3>
                                     </div>
-                                    {expandedSection === 'beneficios' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('beneficios') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'beneficios' && (
+                                {expandedSections.includes('beneficios') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {product.beneficiosDetallados.map((ben, i) => (
                                             <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -353,9 +355,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <ListChecks className="text-blue-600" />
                                         <h3 className="text-xl font-black text-gray-900">Modo de Uso y Dosis</h3>
                                     </div>
-                                    {expandedSection === 'modoDeUso' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('modoDeUso') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'modoDeUso' && (
+                                {expandedSections.includes('modoDeUso') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-6">
                                         {product.modoDeUso.map((seccion, i) => (
                                             <div key={i}>
@@ -386,9 +388,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <Lightbulb className="text-yellow-500" />
                                         <h3 className="text-xl font-black text-gray-900">Casos de Uso Ideales</h3>
                                     </div>
-                                    {expandedSection === 'casosDeUso' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('casosDeUso') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'casosDeUso' && (
+                                {expandedSections.includes('casosDeUso') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
                                         <p className="font-medium text-gray-800 mb-3">Este producto es ideal si buscas:</p>
                                         <ul className="space-y-2">
@@ -415,9 +417,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <ShieldAlert className="text-red-500" />
                                         <h3 className="text-xl font-black text-gray-900">Precauciones Importantes</h3>
                                     </div>
-                                    {expandedSection === 'precauciones' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('precauciones') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'precauciones' && (
+                                {expandedSections.includes('precauciones') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
                                         <div className="bg-red-50 p-4 rounded-xl text-red-800 text-sm font-medium space-y-2 border border-red-100">
                                             {product.precauciones.map((p, i) => (
@@ -443,9 +445,9 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                         <HelpCircle className="text-indigo-600" />
                                         <h3 className="text-xl font-black text-gray-900">Preguntas Frecuentes</h3>
                                     </div>
-                                    {expandedSection === 'faqs' ? <ChevronUp /> : <ChevronDown />}
+                                    {expandedSections.includes('faqs') ? <ChevronUp /> : <ChevronDown />}
                                 </button>
-                                {expandedSection === 'faqs' && (
+                                {expandedSections.includes('faqs') && (
                                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-4">
                                         {product.faqs.map((faq, i) => (
                                             <div key={i} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
@@ -458,16 +460,16 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                             </div>
                         )}
 
-                        {/* Technical Sheet */}
+                        {/* Ficha Tecnica */}
                         <div className="bg-white rounded-2xl shadow-lg overflow-hidden w-full">
                             <button
                                 onClick={() => toggleSection('ficha')}
                                 className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
                             >
                                 <h3 className="text-xl font-black text-gray-900">Ficha Técnica y Especificaciones</h3>
-                                {expandedSection === 'ficha' ? <ChevronUp /> : <ChevronDown />}
+                                {expandedSections.includes('ficha') ? <ChevronUp /> : <ChevronDown />}
                             </button>
-                            {expandedSection === 'ficha' && (
+                            {expandedSections.includes('ficha') && (
                                 <motion.div
                                     initial={{ height: 0 }}
                                     animate={{ height: 'auto' }}
@@ -496,7 +498,55 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                 </motion.div>
                             )}
                         </div>
+
+                        {/* Bloque AEO (Respuestas Rápidas con IA) */}
+                        {product.bloqueAEO && product.bloqueAEO.length > 0 && (
+                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-lg overflow-hidden border border-indigo-100">
+                                <button
+                                    onClick={() => toggleSection('aeo')}
+                                    className="w-full p-6 flex justify-between items-center hover:bg-indigo-100/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-indigo-600 p-2 rounded-xl">
+                                            <Bot className="text-white w-5 h-5" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h3 className="text-xl font-black text-gray-900">Respuestas Rápidas</h3>
+                                            <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Optimizado para Asistentes de Voz</p>
+                                        </div>
+                                    </div>
+                                    {expandedSections.includes('aeo') ? <ChevronUp className="text-indigo-900" /> : <ChevronDown className="text-indigo-900" />}
+                                </button>
+                                {expandedSections.includes('aeo') && (
+                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-4">
+                                        {product.bloqueAEO.map((item, i) => (
+                                            <div key={i} className="bg-white p-5 rounded-xl border border-indigo-50 shadow-sm">
+                                                <h4 className="font-bold text-gray-900 mb-2">{item.pregunta}</h4>
+                                                <p className="text-sm text-gray-600">{item.respuesta}</p>
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
                     </div>
+
+                    {/* SEO Inter-linking */}
+                    {product.enlacesInternos && product.enlacesInternos.length > 0 && (
+                        <div className="max-w-4xl mx-auto mb-16 bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-2 mb-4 text-gray-800">
+                                <LinkIcon size={20} />
+                                <h3 className="font-black text-lg">Te puede interesar también...</h3>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                {product.enlacesInternos.map((enlace, i) => (
+                                    <Link key={i} href={`/producto/${enlace.productId}`} className="text-red-600 hover:text-red-800 hover:underline font-medium flex items-center gap-2 transition-colors">
+                                        <span className="text-xl">&rarr;</span> {enlace.texto}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Related Products */}
                     {relatedProducts.length > 0 && (
