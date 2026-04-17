@@ -13,7 +13,7 @@ export default function WhatsAppButton() {
   }
 
   // Número de soporte de Pajarito
-  const WHATSAPP_NUMBER = '57300XXXXXXX'; 
+  const WHATSAPP_NUMBER = '573026406089'; 
   const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20me%20interesa%20comprar%20productos%20Pajarito.`;
 
   return (

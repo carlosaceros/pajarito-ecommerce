@@ -59,7 +59,7 @@ export default function GarantiasPage() {
 
             <h2>Contacto para Garantías</h2>
             <ul>
-                <li><strong>WhatsApp:</strong> +57 300 XXX XXXX</li>
+                <li><strong>WhatsApp:</strong> +57 302 640 6089</li>
                 <li><strong>Correo:</strong> calidad@productospajarito.com</li>
             </ul>
         </LegalPageLayout>

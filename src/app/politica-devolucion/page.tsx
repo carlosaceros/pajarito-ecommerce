@@ -87,7 +87,7 @@ export default function PoliticaDevolucionPage() {
             <h2>7. Contacto</h2>
             <p>Para iniciar un proceso de devolución o garantía:</p>
             <ul>
-                <li><strong>WhatsApp:</strong> +57 300 XXX XXXX</li>
+                <li><strong>WhatsApp:</strong> +57 302 640 6089</li>
                 <li><strong>Correo:</strong> contacto@productospajarito.com</li>
             </ul>
         </LegalPageLayout>

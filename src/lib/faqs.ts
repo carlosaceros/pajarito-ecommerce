@@ -61,7 +61,7 @@ export const FAQS_GENERALES: FAQItem[] = [
     },
     {
         question: "¿Puedo cambiar o cancelar mi pedido después de hacer el pago?",
-        answer: "Sí, siempre que no se haya despachado. Contáctanos por WhatsApp al 300-XXX-XXXX con tu número de orden antes de 2 horas hábiles después de la compra. El reembolso toma 3-5 días hábiles.",
+        answer: "Sí, siempre que no se haya despachado. Contáctanos por WhatsApp al 302 640 6089 con tu número de orden antes de 2 horas hábiles después de la compra. El reembolso toma 3-5 días hábiles.",
         category: 'compra'
     },
     {

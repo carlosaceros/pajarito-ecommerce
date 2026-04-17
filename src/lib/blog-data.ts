@@ -31,7 +31,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { q: '¿Sirve para ropa blanca y de color?', a: 'Sí, un buen detergente de alto rendimiento está balanceado para limpiar profundamente sin degradar los colores.' },
             { q: '¿Se puede usar en lavado manual?', a: 'Sí, asegurando una buena disolución previa en agua y un enjuague adecuado al final.' }
         ],
-        relatedProductId: 'detergente',
+        relatedProductId: 'detergente-ropa-alto-rendimiento-hogar',
         relatedProductAnchor: 'Detergente ropa alto rendimiento hogar',
         fecha: '2026-04-16',
         imagen: '/images/blog_detergente.png'
@@ -55,7 +55,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { q: '¿Sirve para toallas y sábanas?', a: 'Sí, es el uso ideal ya que es donde más se valora la sensación de suavidad y frescura prolongada.' },
             { q: '¿Se puede usar todos los días?', a: 'Sí, siempre y cuando se utilice en las dosis recomendadas y diluido adecuadamente en el lavado.' }
         ],
-        relatedProductId: 'suavizante',
+        relatedProductId: 'suavizante-textil-maxima-suavidad-aroma',
         relatedProductAnchor: 'Suavizante textil máxima suavidad aroma',
         fecha: '2026-04-16',
         imagen: '/images/blog_suavizante.png'
@@ -79,7 +79,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { q: '¿Qué pasa si lo mezclo con ácidos?', a: 'Desencadena una reacción que libera gas cloro, sumamente tóxico y peligroso para la salud respiratoria.' },
             { q: '¿Cómo se diluye correctamente?', a: 'Para desinfección general de superficies se sugiere 1 taza de producto por galón de agua (4 litros aprox).' }
         ],
-        relatedProductId: 'blanqueador',
+        relatedProductId: 'blanqueador-desinfeccion-total',
         relatedProductAnchor: 'Blanqueador desinfección total hipoclorito',
         fecha: '2026-04-16',
         imagen: '/images/blog_blanqueador.png'
@@ -103,7 +103,7 @@ export const BLOG_POSTS: BlogPost[] = [
             { q: '¿Se puede usar en aluminio?', a: 'Solo con mucha precaución: extremadamente diluido, muy poco tiempo de contacto y enjuague súper rápido. Nunca puro.' },
             { q: '¿Se puede usar en estufas y campanas?', a: 'Sí, es excelente. Recomendamos aplicarlo con la estufa tibia (no hirviendo) para mejorar la eficacia, dejando actuar 10 minutos.' }
         ],
-        relatedProductId: 'desengrasante',
+        relatedProductId: 'desengrasante-rojo-arranca-grasa-extremo',
         relatedProductAnchor: 'Desengrasante rojo arranca grasa extremo',
         fecha: '2026-04-16',
         imagen: '/images/blog_desengrasante.png'

@@ -63,7 +63,7 @@ export default function PrivacidadPage() {
             </p>
             <ul>
                 <li><strong>Correo electrónico:</strong> datos@productospajarito.com</li>
-                <li><strong>WhatsApp:</strong> +57 300 XXX XXXX</li>
+                <li><strong>WhatsApp:</strong> +57 302 640 6089</li>
                 <li><strong>Dirección física:</strong> Cra. 7C #44-17 Sur, Soacha, Cundinamarca</li>
             </ul>
             <p>

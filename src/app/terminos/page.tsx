@@ -116,7 +116,7 @@ export default function TerminosPage() {
                 Para cualquier consulta respecto a estos Términos y Condiciones, puede contactarnos a través de:
             </p>
             <ul>
-                <li><strong>WhatsApp:</strong> +57 300 XXX XXXX</li>
+                <li><strong>WhatsApp:</strong> +57 302 640 6089</li>
                 <li><strong>Correo:</strong> contacto@productospajarito.com</li>
                 <li><strong>Dirección:</strong> Cra. 7C #44-17 Sur, Soacha, Cundinamarca</li>
             </ul>
