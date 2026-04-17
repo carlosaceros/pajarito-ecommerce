@@ -295,20 +295,20 @@ export default function ProductPageContent({ product, relatedProducts }: Product
 
                     {/* Expandable Sections */}
                     <div className="max-w-4xl mx-auto mb-16 space-y-4">
-                        {/* SEO Description */}
-                        {product.descripcionLarga && (
                         {/* Product Detailed Information Cards (Always visible) */}
                         <div className="space-y-6">
                             {/* Descripción Card */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Info className="text-red-600 w-6 h-6" />
-                                    <h3 className="text-2xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
+                            {product.descripcionLarga && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Info className="text-red-600 w-6 h-6" />
+                                        <h3 className="text-2xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
+                                    </div>
+                                    <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line text-sm md:text-base leading-relaxed">
+                                        {product.descripcionLarga}
+                                    </div>
                                 </div>
-                                <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line text-sm md:text-base leading-relaxed">
-                                    {product.descripcionLarga}
-                                </div>
-                            </div>
+                            )}
 
                             {/* Beneficios Card */}
                             {product.beneficiosDetallados && product.beneficiosDetallados.length > 0 && (
