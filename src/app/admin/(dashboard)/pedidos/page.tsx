@@ -521,23 +521,76 @@ export default function PedidosPage() {
                                         <div>
                                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
                                                 <Clock className="text-purple-600" size={18} />
-                                                Historial
+                                                Historial de Trazabilidad
                                             </h3>
                                             <div className="relative pl-4 border-l-2 border-gray-100 space-y-4">
                                                 {safeToArray<TimelineEvent>(activeOrder.timeline).map((event: TimelineEvent, idx: number) => {
                                                     const statusKey = event.status as OrderStatus;
+                                                    const cfg = ORDER_STATUS_CONFIG[statusKey];
+                                                    const isDeclined = event.wompiStatus === 'DECLINED' || event.wompiStatus === 'ERROR';
+                                                    const isApproved = event.wompiStatus === 'APPROVED';
+                                                    const isVoided = event.wompiStatus === 'VOIDED';
+                                                    const isWompi = !!event.wompiTransactionId;
+                                                    const userBadge = event.user
+                                                        ? event.user === 'webhook:wompi'
+                                                            ? { label: 'Wompi', cls: 'bg-blue-100 text-blue-700' }
+                                                            : event.user === 'system'
+                                                                ? { label: 'Sistema', cls: 'bg-gray-100 text-gray-500' }
+                                                                : { label: event.user.replace('admin:', ''), cls: 'bg-violet-100 text-violet-700' }
+                                                        : null;
                                                     return (
                                                         <div key={idx} className="relative">
-                                                            <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${ORDER_STATUS_CONFIG[statusKey].bgColor} border-2 border-white ring-1 ring-gray-200`} />
-                                                            <p className="text-sm font-bold text-gray-900">{ORDER_STATUS_CONFIG[statusKey].label}</p>
-                                                            <p className="text-xs text-gray-500">
-                                                                {format(safeToDate(event.timestamp), "d MMM, HH:mm", { locale: es })}
-                                                            </p>
-                                                            {event.note && (
-                                                                <p className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
-                                                                    {event.note}
-                                                                </p>
-                                                            )}
+                                                            <div className={`absolute -left-[21px] top-1.5 w-3 h-3 rounded-full border-2 border-white ring-1 ${isDeclined ? 'bg-red-400 ring-red-200' : isApproved ? 'bg-green-400 ring-green-200' : isVoided ? 'bg-gray-400 ring-gray-200' : cfg.bgColor + ' ring-gray-200'}`} />
+                                                            <div className={`rounded-xl p-3 border text-xs ${isDeclined ? 'bg-red-50 border-red-200' : isApproved ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
+                                                                <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                                                                    <span className={`font-bold text-sm ${isDeclined ? 'text-red-700' : isApproved ? 'text-green-700' : 'text-gray-900'}`}>
+                                                                        {cfg.icon} {cfg.label}
+                                                                    </span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        {userBadge && (
+                                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${userBadge.cls}`}>{userBadge.label}</span>
+                                                                        )}
+                                                                        <span className="text-gray-400">{format(safeToDate(event.timestamp), "d MMM, HH:mm", { locale: es })}</span>
+                                                                    </div>
+                                                                </div>
+                                                                {event.note && (
+                                                                    <p className={`mb-2 leading-relaxed ${isDeclined ? 'text-red-700' : isApproved ? 'text-green-700' : 'text-gray-600'}`}>{event.note}</p>
+                                                                )}
+                                                                {isWompi && (
+                                                                    <div className="grid grid-cols-2 gap-1.5 mt-2 pt-2 border-t border-gray-200">
+                                                                        {event.wompiTransactionId && (
+                                                                            <div className="col-span-2">
+                                                                                <span className="text-gray-400 block">ID Transacción</span>
+                                                                                <span className="font-mono text-[10px] text-gray-700 break-all">{event.wompiTransactionId}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {event.wompiPaymentMethod && (
+                                                                            <div>
+                                                                                <span className="text-gray-400 block">Método</span>
+                                                                                <span className="font-medium text-gray-700">{event.wompiPaymentMethod}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {event.wompiAmountCents && (
+                                                                            <div>
+                                                                                <span className="text-gray-400 block">Monto</span>
+                                                                                <span className="font-medium text-gray-700">{(event.wompiAmountCents / 100).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {event.wompiDeclineReason && (
+                                                                            <div className="col-span-2">
+                                                                                <span className="text-red-400 block">Motivo de rechazo</span>
+                                                                                <span className="font-semibold text-red-600">{event.wompiDeclineReason}</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {event.wompiEnvironment && (
+                                                                            <div>
+                                                                                <span className="text-gray-400 block">Entorno</span>
+                                                                                <span className={`font-medium ${event.wompiEnvironment === 'test' ? 'text-amber-600' : 'text-green-600'}`}>{event.wompiEnvironment === 'test' ? '🧪 Pruebas' : '✅ Producción'}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}

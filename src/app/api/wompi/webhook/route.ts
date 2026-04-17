@@ -1,22 +1,47 @@
+/**
+ * POST /api/wompi/webhook
+ * 
+ * Receives payment status events from Wompi and writes full traceability
+ * to the order timeline in Firestore, including:
+ *  - Transaction ID
+ *  - Payment method (CARD, PSE, NEQUI, etc.)
+ *  - Status & decline reason
+ *  - Amount
+ *  - Environment (test / production)
+ */
 import { NextResponse } from 'next/server';
 import { validateWebhookDynamicSignature } from '@/lib/wompi-service';
-import { updateOrderStatus } from '@/lib/orders-service';
-import { OrderStatus } from '@/types/order';
+import { addOrderTimelineEventAdmin } from '@/lib/orders-admin-service';
 import { sendAdminPushNotification } from '@/lib/fcm-service';
 import { sendPaymentConfirmedEmail } from '@/lib/email-service';
 import { getAdminDB } from '@/lib/firebase-admin';
+import { OrderStatus } from '@/types/order';
+
+interface WompiTransaction {
+    id: string;
+    status: string; // APPROVED | DECLINED | VOIDED | ERROR
+    reference: string;
+    amount_in_cents: number;
+    payment_method_type: string; // CARD | PSE | BANCOLOMBIA_TRANSFER | NEQUI | etc.
+    currency: string;
+    // Wompi sometimes sends decline_reason
+    payment_method?: {
+        type?: string;
+        extra?: {
+            decline_reason?: string;  // insufficient_funds | invalid_cvv | card_blocked, etc.
+            brand?: string;           // VISA | MASTERCARD | etc.
+            last_four?: string;
+            bank_name?: string;
+            network?: string;
+        };
+    };
+    error_code?: string;
+}
 
 interface WompiWebhookPayload {
     event: string;
     data: {
-        transaction: {
-            id: string;
-            status: string; // APPROVED, DECLINED, VOIDED, ERROR
-            reference: string;
-            amount_in_cents: number;
-            payment_method_type: string;
-            currency: string;
-        };
+        transaction: WompiTransaction;
     };
     environment: string;
     signature: {
@@ -27,16 +52,42 @@ interface WompiWebhookPayload {
     sent_at: string;
 }
 
+/** Human-readable labels for Wompi decline reasons */
+const DECLINE_REASON_LABELS: Record<string, string> = {
+    insufficient_funds: 'Fondos insuficientes',
+    invalid_cvv: 'CVV inválido',
+    card_blocked: 'Tarjeta bloqueada',
+    expired_card: 'Tarjeta vencida',
+    card_not_supported: 'Tarjeta no soportada',
+    suspected_fraud: 'Transacción sospechosa de fraude',
+    contact_issuer: 'Contactar banco emisor',
+    unable_to_process: 'No se pudo procesar',
+    daily_limit_exceeded: 'Límite diario excedido',
+    3ds_failed: 'Autenticación 3DS fallida',
+};
+
+/** Human-readable labels for Wompi payment methods */
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+    CARD: 'Tarjeta de crédito/débito',
+    PSE: 'PSE',
+    BANCOLOMBIA_TRANSFER: 'Transferencia Bancolombia',
+    NEQUI: 'Nequi',
+    BANCOLOMBIA_QR: 'QR Bancolombia',
+    CASH: 'Efecty',
+};
+
 export async function POST(request: Request) {
+    let orderId = 'unknown';
     try {
         const body: WompiWebhookPayload = await request.json();
-
-        // 1. Validate the Webhook Signature
         const { transaction } = body.data;
-        const { signature, timestamp } = body;
+        const { signature, timestamp, environment } = body;
 
-        if (!signature || !signature.checksum) {
-            console.error('Missing Wompi webhook signature');
+        orderId = transaction.reference;
+
+        // 1. Validate signature
+        if (!signature?.checksum) {
+            console.error('[Wompi] Missing webhook signature');
             return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
         }
 
@@ -48,79 +99,118 @@ export async function POST(request: Request) {
         );
 
         if (!isValid) {
-            console.error('Invalid Wompi webhook signature for transaction', transaction.id);
+            console.error('[Wompi] Invalid signature for transaction', transaction.id);
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        // 2. Map Wompi Status to System Order Status
+        // 2. Build human-readable note
+        const declineRaw = transaction.payment_method?.extra?.decline_reason;
+        const declineLabel = declineRaw
+            ? (DECLINE_REASON_LABELS[declineRaw] ?? declineRaw)
+            : undefined;
+
+        const methodLabel = PAYMENT_METHOD_LABELS[transaction.payment_method_type]
+            ?? transaction.payment_method_type;
+
+        const amountCOP = Math.round(transaction.amount_in_cents / 100);
+        const amountFmt = amountCOP.toLocaleString('es-CO', {
+            style: 'currency', currency: 'COP', maximumFractionDigits: 0
+        });
+
         let newStatus: OrderStatus | null = null;
-        let internalNote = `Wompi Webhook: Transacción ${transaction.id} - Estado: ${transaction.status}`;
+        let noteText = '';
 
         switch (transaction.status) {
             case 'APPROVED':
-                newStatus = 'confirmado'; // Assuming approved means we start prep
+                newStatus = 'confirmado';
+                noteText = `✅ Pago aprobado por ${amountFmt} vía ${methodLabel} (Wompi ID: ${transaction.id})`;
                 break;
             case 'DECLINED':
-            case 'ERROR':
+                // For declined payments we log the event but keep order as 'pendiente'
+                // so the customer can retry — only cancel if business decides to.
+                newStatus = 'pendiente';
+                noteText = `❌ Pago rechazado: ${declineLabel ?? 'Motivo no especificado'} · Monto: ${amountFmt} · Método: ${methodLabel} (Wompi ID: ${transaction.id})`;
+                break;
             case 'VOIDED':
                 newStatus = 'cancelado';
+                noteText = `🚫 Pago anulado por ${amountFmt} vía ${methodLabel} (Wompi ID: ${transaction.id})`;
                 break;
-            // 'PENDING' usually shouldn't trigger a final webhook, but just in case
+            case 'ERROR':
+                newStatus = 'pendiente';
+                noteText = `⚠️ Error en el procesamiento del pago: ${transaction.error_code ?? 'código desconocido'} · ${amountFmt} vía ${methodLabel} (Wompi ID: ${transaction.id})`;
+                break;
             default:
-                console.log(`Received unknown status ${transaction.status} for order ${transaction.reference}`);
+                // PENDING, etc. — just log, don't change status
+                noteText = `ℹ️ Evento Wompi: estado "${transaction.status}" para transacción ${transaction.id}`;
+                console.log(`[Wompi] Unknown status ${transaction.status} for order ${orderId}`);
         }
 
-        // 3. Update Firestore Order
+        // 3. Write rich timeline event
         if (newStatus) {
             try {
-                // The reference is assumed to be the Firestore orderId
-                await updateOrderStatus(transaction.reference, newStatus, internalNote);
-                console.log(`Successfully updated order ${transaction.reference} to ${newStatus}`);
+                await addOrderTimelineEventAdmin(orderId, {
+                    status: newStatus,
+                    user: 'webhook:wompi',
+                    note: noteText,
+                    wompiTransactionId: transaction.id,
+                    wompiStatus: transaction.status,
+                    wompiPaymentMethod: methodLabel,
+                    wompiDeclineReason: declineLabel,
+                    wompiAmountCents: transaction.amount_in_cents,
+                    wompiEnvironment: environment,
+                });
 
-                // 4. Fire push notification + email to customer on payment approval
+                console.log(`[Wompi] Order ${orderId} → ${newStatus} (${transaction.status})`);
+
+                // 4. Side effects for APPROVED only
                 if (transaction.status === 'APPROVED') {
-                    const amount = (transaction.amount_in_cents / 100).toLocaleString('es-CO', {
-                        style: 'currency', currency: 'COP', maximumFractionDigits: 0
-                    });
-                    // Push to admin
-                    sendAdminPushNotification({
-                        title: '💳 ¡Pago Confirmado!',
-                        body: `Pedido #${transaction.reference.slice(-6)} · ${amount} aprobado`,
-                        data: { orderId: transaction.reference, type: 'payment_confirmed' },
-                    }).catch(e => console.warn('[FCM] Push failed (non-fatal):', e));
+                    const db = getAdminDB();
+                    const orderDoc = await db.collection('orders').doc(orderId).get();
 
-                    // Email to customer — fetch order data from Firestore Admin
-                    try {
-                        const db = getAdminDB();
-                        const orderDoc = await db.collection('orders').doc(transaction.reference).get();
-                        if (orderDoc.exists) {
-                            const orderData = orderDoc.data()!;
-                            const customerEmail = orderData.cliente?.email;
-                            const customerName = orderData.cliente?.nombre || 'Cliente';
-                            const total = orderData.total || (transaction.amount_in_cents / 100);
-                            if (customerEmail) {
-                                sendPaymentConfirmedEmail({
-                                    orderId: transaction.reference,
-                                    customerName,
-                                    customerEmail,
-                                    total,
-                                }).catch(e => console.warn('[Email] Payment confirmed email failed:', e));
-                            }
+                    if (orderDoc.exists) {
+                        const orderData = orderDoc.data()!;
+                        const customerEmail = orderData.cliente?.email;
+                        const customerName = orderData.cliente?.nombre || 'Cliente';
+                        const total = orderData.total ?? amountCOP;
+
+                        // Push notification to admin
+                        sendAdminPushNotification({
+                            title: '💳 ¡Pago Confirmado!',
+                            body: `Pedido #${orderId.slice(-6)} · ${amountFmt} aprobado`,
+                            data: { orderId, type: 'payment_confirmed' },
+                        }).catch(e => console.warn('[FCM] Push failed:', e));
+
+                        // Confirmation email to customer
+                        if (customerEmail) {
+                            sendPaymentConfirmedEmail({
+                                orderId,
+                                customerName,
+                                customerEmail,
+                                total,
+                            }).catch(e => console.warn('[Email] Payment email failed:', e));
                         }
-                    } catch (e) {
-                        console.warn('[Email] Could not fetch order for payment email:', e);
                     }
                 }
-            } catch (firestoreError) {
-                console.error(`Failed to update order ${transaction.reference} in Firestore:`, firestoreError);
+
+                // 5. Admin notification for DECLINED payments
+                if (transaction.status === 'DECLINED') {
+                    sendAdminPushNotification({
+                        title: '❌ Pago Rechazado',
+                        body: `Pedido #${orderId.slice(-6)} — ${declineLabel ?? 'rechazo'} — ${amountFmt}`,
+                        data: { orderId, type: 'payment_declined' },
+                    }).catch(e => console.warn('[FCM] Declined push failed:', e));
+                }
+
+            } catch (err) {
+                console.error(`[Wompi] Error writing timeline for order ${orderId}:`, err);
             }
         }
 
-        // Always return 200 OK to Wompi so they know we received the webhook
+        // Always return 200 to Wompi
         return NextResponse.json({ received: true });
 
     } catch (error) {
-        console.error('Error processing Wompi webhook:', error);
+        console.error('[Wompi] Unhandled error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

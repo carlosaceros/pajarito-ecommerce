@@ -34,8 +34,15 @@ export interface OrderItem {
 export interface TimelineEvent {
     status: OrderStatus;
     timestamp: Timestamp;
-    user?: string;
+    user?: string;        // 'system' | 'admin:email@...' | 'webhook:wompi'
     note?: string;
+    // --- Enriquecimiento de pago ---
+    wompiTransactionId?: string;
+    wompiStatus?: string;        // APPROVED | DECLINED | ERROR | VOIDED
+    wompiPaymentMethod?: string; // CARD | PSE | NEQUI | etc.
+    wompiDeclineReason?: string; // fondos insuficientes, tarjeta bloqueada, etc.
+    wompiAmountCents?: number;   // monto en centavos
+    wompiEnvironment?: string;   // production | test
 }
 
 export interface Order {
