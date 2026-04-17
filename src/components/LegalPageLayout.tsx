@@ -44,7 +44,7 @@ export default function LegalPageLayout({ title, lastUpdated, children }: LegalP
                 transition={{ delay: 0.1 }}
                 className="max-w-4xl mx-auto px-4 py-10"
             >
-                <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10 prose prose-lg prose-gray prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-800 prose-ul:text-gray-800 prose-ol:text-gray-800 prose-li:text-gray-800 prose-a:text-red-700 prose-a:font-bold prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 max-w-none">
+                <div className="bg-white rounded-2xl shadow-lg p-6 md:p-10 prose prose-lg max-w-none text-gray-800">
                     {children}
                 </div>
             </motion.div>
