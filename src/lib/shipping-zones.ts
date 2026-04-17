@@ -24,7 +24,7 @@ export const FREE_SHIPPING_LOCAL = 100_000;   // Vecis Soachunos/as
 export const FREE_SHIPPING_NACIONAL = Infinity; // Desactivado para Nacional
 
 // Tarifa plana nacional (Pajarito subsidia el excedente del flete real)
-export const TARIFA_PLANA_NACIONAL = 18_000;
+export const TARIFA_PLANA_NACIONAL = 35_000;
 
 // Tarifa local (cuando no aplica gratis)
 export const TARIFA_LOCAL = 8_000;

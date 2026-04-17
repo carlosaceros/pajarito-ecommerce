@@ -107,7 +107,7 @@ export async function cotizarEnvio(
         origen: ORIGEN,
         IdTipoEntrega: 1,
         IdServicio: 1,
-        valorDeclarado: 0,
+        valorDeclarado: Math.max(10000, valorDeclarado),
         peso: Math.min(pesoKg, 30), // API máx. 30kg por guía
         alto,
         largo,
@@ -205,7 +205,7 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
         ancho: Math.max(15, Math.round(pesoKg * 1.0)),
         alto: Math.max(20, Math.round(pesoKg * 1.5)),
         diceContener: data.diceContener || 'Productos de limpieza y hogar',
-        valorDeclarado: 0,
+        valorDeclarado: data.valorDeclarado,
         seguro99: false,
         seguro99plus: false,
         Destinatario: {
