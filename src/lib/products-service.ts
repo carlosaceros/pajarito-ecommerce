@@ -43,15 +43,11 @@ export async function getAllProducts(forceRefresh = false): Promise<Product[]> {
             const firestoreData = { id: docSnap.id, ...docSnap.data() } as Product;
             const local = localMap.get(firestoreData.id);
             if (local) {
-                // Merge: Firestore solo sobreescribe si tiene campos propios (admin customization)
-                // Los textos y precios del local SIEMPRE ganan (fuente de verdad 2026)
+                // Merge: LOCAL es la fuente de verdad (contiene SEO/AEO, precios 2026, todo).
+                // Firestore solo aporta campos editados desde el admin (ej. nombre, badge, orden).
+                // Al usar ...local como base, TODOS los campos nuevos se preservan siempre.
                 localMap.set(firestoreData.id, {
-                    ...firestoreData,
-                    precios: local.precios,
-                    competidorPromedio: local.competidorPromedio,
-                    descripcion: local.descripcion,
-                    beneficios: local.beneficios,
-                    slogan: local.slogan,
+                    ...local,
                 });
             } else {
                 // Producto creado solo en Firestore (por el admin), se agrega tal cual
