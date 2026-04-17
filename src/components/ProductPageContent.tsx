@@ -287,7 +287,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                 </div>
 
                                 <p className="text-xs text-gray-500 text-center mt-4">
-                                    Envío gratis desde $100.000 (local) o $180.000 (nacional)
+                                    Envío gratis en Soacha y alrededores desde $100.000
                                 </p>
                             </div>
                         </motion.div>

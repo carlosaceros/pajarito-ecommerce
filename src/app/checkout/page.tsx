@@ -761,7 +761,7 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-gray-500">
                                             {esVeci
                                                 ? `🏘️ Envío gratis desde ${formatCurrency(FREE_SHIPPING_LOCAL)} (zona Veci Soachuno/a)`
-                                                : `📦 Envío gratis nacional desde ${formatCurrency(FREE_SHIPPING_NACIONAL)}`
+                                                : `📦 Tarifa plana nacional: ${formatCurrency(TARIFA_PLANA_NACIONAL)}`
                                             }
                                         </p>
                                     )}

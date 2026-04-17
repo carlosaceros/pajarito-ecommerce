@@ -4,6 +4,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { AuthProvider } from "@/lib/auth-context";
 import GlobalHeader from "@/components/GlobalHeader";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import GlobalFooter from "@/components/GlobalFooter";
 import "./globals.css";
 
 const BASE_URL = 'https://www.productospajarito.com';
@@ -115,6 +116,7 @@ export default function RootLayout({
           <CartProvider>
             <GlobalHeader />
             {children}
+            <GlobalFooter />
             <WhatsAppButton />
             <Analytics />
           </CartProvider>
