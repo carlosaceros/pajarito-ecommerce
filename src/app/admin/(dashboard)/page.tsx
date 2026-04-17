@@ -10,7 +10,8 @@ import {
     Package,
     ArrowUpRight,
     LogOut,
-    Truck
+    Truck,
+    Activity
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
@@ -389,6 +390,17 @@ export default function AdminDashboard() {
                             <Truck className="text-orange-500 mb-3" size={24} />
                             <p className="font-black text-gray-900 mb-1">Zonas de Envío</p>
                             <p className="text-xs text-gray-600">Tarifas y cobertura por ciudad</p>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => router.push('/admin/auditoria-envios')}
+                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-violet-200 transition-colors"
+                        >
+                            <Activity className="text-violet-500 mb-3" size={24} />
+                            <p className="font-black text-gray-900 mb-1">Auditoría Envíos</p>
+                            <p className="text-xs text-gray-600">Logs y diagnóstico de cotizaciones</p>
                         </motion.button>
                     </div>
                 </div>
