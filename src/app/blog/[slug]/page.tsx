@@ -110,14 +110,13 @@ export default async function BlogPostPage({ params }: Props) {
                 </div>
 
                 {/* Cover Image */}
-                <div className="relative w-full h-[300px] md:h-[450px] bg-gray-50 rounded-3xl overflow-hidden mb-12 shadow-sm border border-gray-100 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-100/50 to-transparent"></div>
+                <div className="relative w-full aspect-video md:h-[450px] bg-gray-50 rounded-3xl overflow-hidden mb-12 shadow-sm border border-gray-100">
+                    <div className="absolute inset-0 bg-black/10 z-10"></div>
                     <Image
                         src={post.imagen}
                         alt={post.tituloSEO}
-                        width={600}
-                        height={600}
-                        className="object-contain h-[90%] drop-shadow-2xl"
+                        fill
+                        className="object-cover"
                     />
                 </div>
 

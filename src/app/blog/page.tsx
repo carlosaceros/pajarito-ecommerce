@@ -46,9 +46,8 @@ export default function BlogIndexPage() {
                                 <Image
                                     src={post.imagen}
                                     alt={post.tituloSEO}
-                                    width={400}
-                                    height={400}
-                                    className="object-contain h-48 group-hover:scale-105 transition-transform duration-500 drop-shadow-xl"
+                                    fill
+                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                                 <div className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-600 flex items-center gap-1.5 shadow-sm">
                                     <Clock size={14} />
