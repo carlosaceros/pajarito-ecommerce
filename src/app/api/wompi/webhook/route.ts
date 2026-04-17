@@ -63,7 +63,7 @@ const DECLINE_REASON_LABELS: Record<string, string> = {
     contact_issuer: 'Contactar banco emisor',
     unable_to_process: 'No se pudo procesar',
     daily_limit_exceeded: 'Límite diario excedido',
-    3ds_failed: 'Autenticación 3DS fallida',
+    '3ds_failed': 'Autenticación 3DS fallida',
 };
 
 /** Human-readable labels for Wompi payment methods */
