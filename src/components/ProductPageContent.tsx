@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, ArrowLeft, Package, Truck, Shield, ChevronDown, ChevronUp, Info, ListChecks, ShieldAlert, Lightbulb, CheckCircle, HelpCircle, Bot, Link as LinkIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -33,6 +33,24 @@ export default function ProductPageContent({ product, relatedProducts }: Product
     const [quantity, setQuantity] = useState(1);
     const [showToast, setShowToast] = useState(false);
     const [expandedSections, setExpandedSections] = useState<string[]>(['descripcion', 'beneficios', 'aeo']);
+    const [showStickyBar, setShowStickyBar] = useState(false);
+    const ctaRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                // If CTA is not visible on screen, we show the sticky bar
+                setShowStickyBar(!entry.isIntersecting);
+            },
+            { threshold: 0 }
+        );
+
+        if (ctaRef.current) {
+            observer.observe(ctaRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
 
     const savingsData = calcularAhorro(
         product.precios[selectedSize] ?? 0,
@@ -268,7 +286,7 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                                 </div>
 
                                 {/* CTA Buttons */}
-                                <div className="space-y-3">
+                                <div className="space-y-3" ref={ctaRef}>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
@@ -540,6 +558,54 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                     )}
                 </div>
             </div>
+
+            {/* Sticky Bottom Bar */}
+            <AnimatePresence>
+                {showStickyBar && (
+                    <motion.div
+                        initial={{ y: 100 }}
+                        animate={{ y: 0 }}
+                        exit={{ y: 100 }}
+                        className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 shadow-[0_-4px_10px_-1px_rgba(0,0,0,0.1)] z-50 md:hidden"
+                    >
+                        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                            {/* Mobile Price & Size */}
+                            <div className="flex flex-col">
+                                <span className="font-bold text-gray-900 text-sm truncate max-w-[120px]">{product.nombre}</span>
+                                <span className="text-xs text-red-600 font-black">{selectedSize} - {formatCurrency(product.precios[selectedSize] ?? 0)}</span>
+                            </div>
+                            
+                            <div className="flex flex-1 items-center justify-end gap-3">
+                                {/* Compact quantity */}
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-8 h-8 flex items-center justify-center font-bold text-gray-700"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="font-bold w-4 text-center text-sm">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(quantity + 1)}
+                                        className="w-8 h-8 flex items-center justify-center font-bold text-gray-700"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handleAddToCart}
+                                    className="bg-red-600 hover:bg-red-700 text-white font-black py-2.5 px-4 rounded-xl shadow text-sm flex items-center gap-2"
+                                >
+                                    <ShoppingCart size={16} />
+                                    AGREGAR
+                                </motion.button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 }
