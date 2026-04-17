@@ -565,7 +565,7 @@ export default function CheckoutPage() {
                                                                 {!shippingInfo.loading && shippingInfo.sinCobertura && shippingInfo.mensaje}
                                                                 {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === 'free_shipping' && shippingInfo.mensaje}
                                                                 {!shippingInfo.loading && !shippingInfo.sinCobertura && shippingInfo.source === '99envios' && (
-                                                                    <>Envío con {shippingInfo.transportadora} · {shippingInfo.dias} días hábiles</>
+                                                                    <>Envío con {shippingInfo.transportadora}</>
                                                                 )}
                                                                 {!shippingInfo.loading && !shippingInfo.sinCobertura && (shippingInfo.source === 'fallback' || shippingInfo.source === 'free_partial') && (
                                                                     <>Envío estimado{shippingInfo.mensaje ? ` · ${shippingInfo.mensaje}` : ''}</>
@@ -577,9 +577,9 @@ export default function CheckoutPage() {
                                                                     📦 {shippingInfo.mensajePaquete}
                                                                 </p>
                                                             )}
-                                                            {/* Tooltop subsidio de marca */}
+                                                            {/* Tooltip subsidio de marca */}
                                                             {shippingInfo.subsidioMensaje && (
-                                                                <div className="relative mt-1">
+                                                                <div className="mt-1">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => setShowSubsidioTooltip(v => !v)}
@@ -591,13 +591,14 @@ export default function CheckoutPage() {
                                                                     <AnimatePresence>
                                                                         {showSubsidioTooltip && (
                                                                             <motion.div
-                                                                                initial={{ opacity: 0, y: 4 }}
-                                                                                animate={{ opacity: 1, y: 0 }}
-                                                                                exit={{ opacity: 0, y: 4 }}
-                                                                                className="absolute left-0 bottom-full mb-2 w-64 bg-gray-900 text-white text-[11px] rounded-xl p-3 shadow-xl z-50 leading-relaxed"
+                                                                                initial={{ opacity: 0, height: 0 }}
+                                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                                exit={{ opacity: 0, height: 0 }}
+                                                                                className="overflow-hidden"
                                                                             >
-                                                                                💙 {shippingInfo.subsidioMensaje}
-                                                                                <div className="absolute left-4 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900" />
+                                                                                <div className="mt-2 text-[11px] text-blue-800 bg-blue-100/50 border border-blue-200 rounded-lg p-2 leading-relaxed">
+                                                                                    💙 {shippingInfo.subsidioMensaje}
+                                                                                </div>
                                                                             </motion.div>
                                                                         )}
                                                                     </AnimatePresence>

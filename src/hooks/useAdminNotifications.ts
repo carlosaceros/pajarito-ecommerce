@@ -189,7 +189,7 @@ export function useAdminNotifications() {
     return {
         notifications,
         unreadCount,
-        permissionGranted: permissionGranted || (typeof window !== 'undefined' && Notification.permission === 'granted'),
+        permissionGranted: permissionGranted || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'),
         markAllAsRead,
         markAsRead,
         requestPermission,
