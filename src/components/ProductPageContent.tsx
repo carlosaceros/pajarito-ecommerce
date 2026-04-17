@@ -297,114 +297,84 @@ export default function ProductPageContent({ product, relatedProducts }: Product
                     <div className="max-w-4xl mx-auto mb-16 space-y-4">
                         {/* SEO Description */}
                         {product.descripcionLarga && (
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                                <button
-                                    onClick={() => toggleSection('descripcion')}
-                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Info className="text-red-600" />
-                                        <h3 className="text-xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
-                                    </div>
-                                    {expandedSections.includes('descripcion') ? <ChevronUp /> : <ChevronDown />}
-                                </button>
-                                {expandedSections.includes('descripcion') && (
-                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
-                                        <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line">
-                                            {product.descripcionLarga}
-                                        </div>
-                                    </motion.div>
-                                )}
+                        {/* Product Detailed Information Cards (Always visible) */}
+                        <div className="space-y-6">
+                            {/* Descripción Card */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Info className="text-red-600 w-6 h-6" />
+                                    <h3 className="text-2xl font-black text-gray-900">¿Por qué elegir este producto?</h3>
+                                </div>
+                                <div className="prose max-w-none text-gray-600 space-y-4 whitespace-pre-line text-sm md:text-base leading-relaxed">
+                                    {product.descripcionLarga}
+                                </div>
                             </div>
-                        )}
 
-                        {/* Beneficios Detallados */}
-                        {product.beneficiosDetallados && product.beneficiosDetallados.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                                <button
-                                    onClick={() => toggleSection('beneficios')}
-                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="text-green-600" />
-                                        <h3 className="text-xl font-black text-gray-900">Beneficios Principales</h3>
+                            {/* Beneficios Card */}
+                            {product.beneficiosDetallados && product.beneficiosDetallados.length > 0 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <CheckCircle className="text-green-600 w-6 h-6" />
+                                        <h3 className="text-2xl font-black text-gray-900">Beneficios Principales</h3>
                                     </div>
-                                    {expandedSections.includes('beneficios') ? <ChevronUp /> : <ChevronDown />}
-                                </button>
-                                {expandedSections.includes('beneficios') && (
-                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {product.beneficiosDetallados.map((ben, i) => (
-                                            <div key={i} className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                                <h4 className="font-bold text-gray-900 mb-2">{ben.titulo}</h4>
-                                                <p className="text-sm text-gray-600">{ben.texto}</p>
+                                            <div key={i} className="bg-gray-50 p-5 rounded-xl border border-gray-100 transition-colors hover:bg-green-50/50">
+                                                <h4 className="font-bold text-gray-900 mb-2 flex items-start gap-2">
+                                                    <span className="text-green-600 mt-1 mt-0.5">•</span>
+                                                    {ben.titulo}
+                                                </h4>
+                                                <p className="text-sm text-gray-600 ml-4">{ben.texto}</p>
                                             </div>
                                         ))}
-                                    </motion.div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Modo de Uso */}
-                        {product.modoDeUso && product.modoDeUso.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                                <button
-                                    onClick={() => toggleSection('modoDeUso')}
-                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <ListChecks className="text-blue-600" />
-                                        <h3 className="text-xl font-black text-gray-900">Modo de Uso y Dosis</h3>
                                     </div>
-                                    {expandedSections.includes('modoDeUso') ? <ChevronUp /> : <ChevronDown />}
-                                </button>
-                                {expandedSections.includes('modoDeUso') && (
-                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6 space-y-6">
+                                </div>
+                            )}
+
+                            {/* Modo de Uso Card */}
+                            {product.modoDeUso && product.modoDeUso.length > 0 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <ListChecks className="text-blue-600 w-6 h-6" />
+                                        <h3 className="text-2xl font-black text-gray-900">Modo de Uso y Dosis</h3>
+                                    </div>
+                                    <div className="space-y-6">
                                         {product.modoDeUso.map((seccion, i) => (
-                                            <div key={i}>
-                                                <h4 className="font-bold text-gray-800 mb-3">{seccion.titulo}</h4>
+                                            <div key={i} className="bg-blue-50/30 p-5 rounded-xl">
+                                                <h4 className="font-bold text-blue-900 mb-3">{seccion.titulo}</h4>
                                                 <ul className="list-none space-y-2">
                                                     {seccion.pasos.map((paso, j) => (
-                                                        <li key={j} className="flex gap-2 text-gray-600 text-sm">
-                                                            <div className="font-black text-blue-600 mt-0.5">•</div>
+                                                        <li key={j} className="flex gap-3 text-gray-700 text-sm md:text-base">
+                                                            <div className="font-black text-blue-500 mt-0.5">✓</div>
                                                             <span>{paso}</span>
                                                         </li>
                                                     ))}
                                                 </ul>
                                             </div>
                                         ))}
-                                    </motion.div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Casos de Uso */}
-                        {product.casosDeUso && product.casosDeUso.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                                <button
-                                    onClick={() => toggleSection('casosDeUso')}
-                                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Lightbulb className="text-yellow-500" />
-                                        <h3 className="text-xl font-black text-gray-900">Casos de Uso Ideales</h3>
                                     </div>
-                                    {expandedSections.includes('casosDeUso') ? <ChevronUp /> : <ChevronDown />}
-                                </button>
-                                {expandedSections.includes('casosDeUso') && (
-                                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="px-6 pb-6">
-                                        <p className="font-medium text-gray-800 mb-3">Este producto es ideal si buscas:</p>
-                                        <ul className="space-y-2">
-                                            {product.casosDeUso.map((caso, i) => (
-                                                <li key={i} className="flex gap-2 text-gray-600 text-sm items-center">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-yellow-400"></div>
-                                                    <span>{caso}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </motion.div>
-                                )}
-                            </div>
-                        )}
+                                </div>
+                            )}
+
+                            {/* Casos de Uso Card */}
+                            {product.casosDeUso && product.casosDeUso.length > 0 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Lightbulb className="text-yellow-500 w-6 h-6" />
+                                        <h3 className="text-2xl font-black text-gray-900">Casos de Uso Ideales</h3>
+                                    </div>
+                                    <p className="font-medium text-gray-800 mb-4">Este producto es ideal si buscas:</p>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {product.casosDeUso.map((caso, i) => (
+                                            <li key={i} className="flex gap-3 text-gray-600 text-sm md:text-base items-center bg-gray-50 p-3 rounded-lg">
+                                                <div className="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></div>
+                                                <span>{caso}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Precauciones */}
                         {product.precauciones && product.precauciones.length > 0 && (

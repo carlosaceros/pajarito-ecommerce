@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-6">
       {/* Toast Notification */}
       <Toast
         show={showToast}
@@ -50,7 +50,7 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl mt-6">
+      <div className="rounded-[2rem] mb-10 relative overflow-hidden mx-4 md:mx-auto max-w-7xl">
         {/* Background: banner image — cover on mobile, zoomed on desktop to crop watermark */}
         <div
           className="absolute inset-0 bg-cover bg-center md:bg-[length:115%] md:bg-[position:left_40%] bg-no-repeat"
