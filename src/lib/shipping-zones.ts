@@ -19,8 +19,8 @@ export const SOACHA_ZONE_CITIES = [
     'BOSA',
 ];
 
-// Umbrales de envío gratis (COP)
-export const FREE_SHIPPING_LOCAL = 100_000;   // Vecis Soachunos/as
+// Umbrales de envío gratis (COP) - DESACTIVADOS POR PRD 27 ABRIL
+export const FREE_SHIPPING_LOCAL = Infinity;   // Desactivado para local
 export const FREE_SHIPPING_NACIONAL = Infinity; // Desactivado para Nacional
 
 // Tarifa plana nacional (Pajarito subsidia el excedente del flete real)
