@@ -1,6 +1,8 @@
 import { Product } from './products';
 import { getAllProducts } from './products-service';
 import { Metadata } from 'next';
+import { calcularSubsidio } from './shipping-zones';
+import { PESOS_POR_TALLA } from './products';
 
 const BASE_URL = 'https://www.productospajarito.com';
 
@@ -163,7 +165,7 @@ export function generateProductSchema(product: Product, size: string = '10L') {
                 "@type": "OfferShippingDetails",
                 "shippingRate": {
                     "@type": "MonetaryAmount",
-                    "value": "12000",
+                    "value": calcularSubsidio(PESOS_POR_TALLA[s] || 10).toString(),
                     "currency": "COP"
                 },
                 "freeShippingThreshold": {

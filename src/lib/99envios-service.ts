@@ -108,13 +108,13 @@ export async function cotizarEnvio(
         IdTipoEntrega: 1,
         IdServicio: 1,
         valorDeclarado: Math.max(10000, valorDeclarado),
-        peso: Math.min(pesoKg, 30), // API máx. 30kg por guía
+        peso: Math.min(pesoKg, 20), // API máx. 20kg por guía (actualizado según nueva regla bulto)
         alto,
         largo,
         ancho,
         fecha,
         seguro99: false,
-        seguro99plus: false,
+        seguro99plus: aplicaContrapago ? 1 : 0,
         AplicaContrapago: aplicaContrapago,
     };
 
@@ -200,14 +200,14 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
         IdTipoEntrega: 1,
         IdServicio: 1,
         AplicaContrapago: !!(data.valorContrapago && data.valorContrapago > 0),
-        peso: Math.min(pesoKg, 30),
+        peso: Math.min(pesoKg, 20),
         largo: Math.max(15, Math.round(pesoKg * 1.2)),
         ancho: Math.max(15, Math.round(pesoKg * 1.0)),
         alto: Math.max(20, Math.round(pesoKg * 1.5)),
         diceContener: data.diceContener || 'Productos de limpieza y hogar',
         valorDeclarado: data.valorDeclarado,
         seguro99: false,
-        seguro99plus: false,
+        seguro99plus: !!(data.valorContrapago && data.valorContrapago > 0) ? 1 : 0,
         Destinatario: {
             tipoDocumento: data.destinatario.tipoDocumento,
             numeroDocumento: data.destinatario.numeroDocumento || '',

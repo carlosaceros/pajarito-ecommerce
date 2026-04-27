@@ -36,7 +36,7 @@ export const PICKUP_DISCOUNT_PCT = 0.05;
 export const PICKUP_ADDRESS = 'Cra. 7C #44-17 Sur, Barrio San Nicolás, Soacha';
 
 // Peso máximo por paquete (kg)
-export const PESO_MAX_PAQUETE_KG = 30;
+export const PESO_MAX_PAQUETE_KG = 20;
 
 /**
  * Determina si un código DANE (5-8 dígitos) pertenece a la zona local Soacha.
@@ -119,14 +119,50 @@ export const isVecinoSoachuno = isVeciSoacha;
 export const isVecinoSoachunoByCityName = isVeciSoachaByCityName;
 
 /**
- * Calcula el subsidio Pajarito fijo basado en el totalWeightKg
- * Comienza en $1.000 para 1 KG. Escala a $35.000 a los 39 KG. Caen a $24.000 a partir de 40 KG.
+ * Tabla de subsidios por defecto (Logística 2026)
+ * Basada en la tabla oficial de KG vs VALOR A DESCONTAR (Subsidio).
+ * Estas son las tarifas fijas que Pajarito asume del costo real del envío.
  */
-export function calcularSubsidio(totalWeightKg: number): number {
-    if (totalWeightKg <= 0) return 0;
-    if (totalWeightKg < 1) return 1000;
-    if (totalWeightKg >= 40) return 24000;
+export const DEFAULT_SUBSIDIOS: Record<number, number> = {
+    1: 1000, 2: 2000, 3: 4000, 4: 5000, 5: 6000, 6: 8000, 7: 9000, 8: 10000, 9: 11000, 10: 12000,
+    11: 14000, 12: 15000, 13: 16000, 14: 17000, 15: 18000, 16: 20000, 17: 21000, 18: 22000, 19: 23000, 20: 12000,
+    21: 13000, 22: 15000, 23: 16000, 24: 17000, 25: 18000, 26: 20000, 27: 21000, 28: 22000, 29: 23000, 30: 24000,
+    31: 25000, 32: 27000, 33: 28000, 34: 29000, 35: 30000, 36: 32000, 37: 33000, 38: 34000, 39: 35000, 40: 24000
+};
+
+/**
+ * Retorna el valor de subsidio (descuento) que se le debe aplicar al flete real del cliente.
+ * Si el peso excede los 40kg, se aplica lógica modular por bulto de 20kg ($12.000 de subsidio por bulto lleno).
+ */
+export function calcularSubsidio(totalWeightKg: number, customTable?: Record<string, number>): number {
+    const weight = Math.ceil(totalWeightKg);
+    if (weight <= 0) return 0;
     
-    // Entre 1kg y 39kg interpolación lineal (1000 -> 35000)
-    return Math.round(1000 + ((totalWeightKg - 1) * 34000) / 38);
+    const tableToUse = customTable || DEFAULT_SUBSIDIOS;
+    
+    // Convert keys to numbers if it's from JSON
+    const getValue = (kg: number) => {
+        const val = tableToUse[kg.toString()] ?? tableToUse[kg];
+        return typeof val === 'number' ? val : 0;
+    };
+    
+    // Si está en la tabla (hasta 40kg)
+    const exactValue = getValue(weight);
+    if (exactValue > 0 && weight <= 40) {
+        return exactValue;
+    }
+    
+    // Para pesos superiores a 40kg, calculamos bultos de 20kg
+    // Cada bulto de 20kg recibe 12,000 de subsidio (o lo que dicte la tabla para 20kg).
+    const subsidioBultoLleno = getValue(20) || 12000;
+    const numFullBultos = Math.floor(weight / 20);
+    const remainder = weight % 20;
+    
+    if (remainder === 0) {
+        return numFullBultos * subsidioBultoLleno;
+    }
+    
+    return (numFullBultos * subsidioBultoLleno) + getValue(remainder);
 }
+
+

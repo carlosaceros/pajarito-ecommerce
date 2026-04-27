@@ -23,8 +23,16 @@ interface ShippingConfig {
     envioGratis: number;
     precioDefault: number;
     zonas: ShippingZone[];
+    tarifasSubsidio?: Record<string, number>;
     updatedAt?: string;
 }
+
+const DEFAULT_SUBSIDIOS: Record<string, number> = {
+    "1": 1000, "2": 2000, "3": 4000, "4": 5000, "5": 6000, "6": 8000, "7": 9000, "8": 10000, "9": 11000, "10": 12000,
+    "11": 14000, "12": 15000, "13": 16000, "14": 17000, "15": 18000, "16": 20000, "17": 21000, "18": 22000, "19": 23000, "20": 12000,
+    "21": 13000, "22": 15000, "23": 16000, "24": 17000, "25": 18000, "26": 20000, "27": 21000, "28": 22000, "29": 23000, "30": 24000,
+    "31": 25000, "32": 27000, "33": 28000, "34": 29000, "35": 30000, "36": 32000, "37": 33000, "38": 34000, "39": 35000, "40": 24000
+};
 
 interface CityEntry {
     codigo: string;
@@ -73,6 +81,10 @@ export default function AdminEnviosPage() {
         fetch('/api/admin/shipping-config')
             .then(r => r.json())
             .then((data: ShippingConfig) => {
+                // Initialize tarifasSubsidio if not present
+                if (!data.tarifasSubsidio) {
+                    data.tarifasSubsidio = { ...DEFAULT_SUBSIDIOS };
+                }
                 setConfig(data);
                 setLoading(false);
             })
@@ -303,6 +315,44 @@ export default function AdminEnviosPage() {
                             </div>
                             <p className="text-xs text-gray-400 mt-1">Se usa cuando 99 Envíos no responde y la ciudad no está en ninguna zona</p>
                         </div>
+                    </div>
+                </div>
+
+                {/* Subsidies config */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <Truck size={18} className="text-gray-500" /> Tarifas de Subsidio (Descuento al cliente)
+                        </h2>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4">
+                        Este es el valor en COP que <strong>descontamos</strong> de la tarifa real de la transportadora para ofrecer envíos más económicos, basado en el peso.
+                    </p>
+                    <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
+                        {Array.from({ length: 40 }, (_, i) => i + 1).map(kg => (
+                            <div key={kg} className="flex flex-col">
+                                <label className="text-xs font-medium text-gray-600 text-center mb-1">{kg} kg</label>
+                                <input
+                                    type="number"
+                                    value={config.tarifasSubsidio?.[kg.toString()] ?? DEFAULT_SUBSIDIOS[kg.toString()]}
+                                    onChange={e => {
+                                        const val = +e.target.value;
+                                        setConfig(prev => {
+                                            if (!prev) return prev;
+                                            return {
+                                                ...prev,
+                                                tarifasSubsidio: {
+                                                    ...(prev.tarifasSubsidio || DEFAULT_SUBSIDIOS),
+                                                    [kg.toString()]: val
+                                                }
+                                            };
+                                        });
+                                        markDirty();
+                                    }}
+                                    className="w-full text-center px-1 py-1.5 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-red-400"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
 

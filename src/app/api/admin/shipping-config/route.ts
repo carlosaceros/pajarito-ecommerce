@@ -16,6 +16,7 @@ export interface ShippingConfig {
     envioGratis: number; // subtotal mínimo para envío gratis
     precioDefault: number; // precio si la ciudad no está en ninguna zona
     zonas: ShippingZone[];
+    tarifasSubsidio?: Record<string, number>;
     updatedAt?: string;
 }
 
@@ -99,6 +100,7 @@ export async function POST(request: Request) {
                 ciudades: Array.isArray(z.ciudades) ? z.ciudades : [],
                 color: z.color || '#6B7280',
             })),
+            tarifasSubsidio: body.tarifasSubsidio || undefined,
             updatedAt: new Date().toISOString(),
         };
 

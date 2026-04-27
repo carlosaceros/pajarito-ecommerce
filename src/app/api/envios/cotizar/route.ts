@@ -43,7 +43,19 @@ interface ShippingConfig {
     envioGratis: number;
     precioDefault: number;
     zonas: ShippingZone[];
+    tarifasSubsidio?: Record<string, number>;
 }
+
+// Quote Cache Interfaces
+interface QuoteCacheData {
+    destinoCodigo: string;
+    valor: number;
+    valor_contrapago: number;
+    transportadora: string;
+    dias: string;
+    updatedAt: string;
+}
+const QUOTES_CACHE_COLLECTION = 'shipping_quotes_cache';
 
 async function getShippingConfig(): Promise<ShippingConfig> {
     try {
@@ -109,7 +121,8 @@ export async function POST(request: Request) {
 
         const esVecino = isVecinoSoachuno(destinoCodigo);
         const bultos = calcularBultos(totalWeightKg);
-        const subsidio = calcularSubsidio(totalWeightKg);
+        const config = await getShippingConfig();
+        const subsidioDescuento = calcularSubsidio(totalWeightKg, config.tarifasSubsidio);
 
         auditLog = {
             destinoCodigo,
@@ -119,7 +132,7 @@ export async function POST(request: Request) {
             bultos,
             aplicaContrapago,
             esVecino,
-            subsidio,
+            subsidioDescuento,
             source: 'unknown',
         };
 
@@ -160,22 +173,19 @@ export async function POST(request: Request) {
 
             api99Raw = quote.all as unknown as Record<string, unknown>;
 
-            // costoUnBulto = flete de transporte (valor) + cargo por recaudo (valor_contrapago si aplica)
-            // valor_contrapago es el cargo EXTRA que cobra la transportadora por recoger el dinero
-            // NO es el monto a cobrar al cliente; ese es valorDeclarado
             const costoUnBulto = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
             const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
 
-            // Aplicar subsidio, pero respetar precio mínimo en nacionales
-            let precioFinal: number;
-            if (esVecino) {
-                precioFinal = Math.max(0, costoBultos.costo - subsidio);
-            } else {
-                precioFinal = Math.max(PRECIO_MINIMO_NACIONAL, costoBultos.costo - subsidio);
-            }
+            // El precio final descuenta el subsidio, pero respetando el mínimo nacional si no es vecino
+            let precioFinal = esVecino
+                ? Math.max(0, costoBultos.costo - subsidioDescuento)
+                : Math.max(PRECIO_MINIMO_NACIONAL, costoBultos.costo - subsidioDescuento);
+
+            // El subsidio aplicado es la diferencia
+            const subsidioAplicado = Math.max(0, costoBultos.costo - precioFinal);
 
             const result = {
-                gratis: false, // Nacional siempre paga algo
+                gratis: false,
                 precio: precioFinal,
                 precioBase: quote.cheapest.valor,
                 valorContrapago: quote.cheapest.valor_contrapago,
@@ -187,7 +197,7 @@ export async function POST(request: Request) {
                 mensajePaquete: costoBultos.mensajePaquete,
                 source: '99envios',
                 cotizaciones: quote.all,
-                subsidioAplicado: subsidio,
+                subsidioAplicado,
                 subsidioMensaje: !esVecino
                     ? 'En Pajarito subsidiamos parte de tu envío para que ahorres comprando directo de fábrica.'
                     : undefined,
@@ -201,11 +211,27 @@ export async function POST(request: Request) {
                 valorContrapago99: quote.cheapest.valor_contrapago,
                 costoUnBulto,
                 costoBrutoBultos: costoBultos.costo,
-                subsidioAplicado: subsidio,
+                subsidioAplicado: subsidioAplicado,
                 precioFinal,
                 api99Cotizaciones: api99Raw,
                 durationMs: Date.now() - startTime,
             });
+
+            // Save to cache
+            try {
+                const db = getAdminDB();
+                const cacheData: QuoteCacheData = {
+                    destinoCodigo,
+                    valor: quote.cheapest.valor,
+                    valor_contrapago: quote.cheapest.valor_contrapago,
+                    transportadora: quote.cheapest.transportadora,
+                    dias: quote.cheapest.dias,
+                    updatedAt: new Date().toISOString(),
+                };
+                await db.collection(QUOTES_CACHE_COLLECTION).doc(destinoCodigo).set(cacheData);
+            } catch (cacheErr) {
+                console.warn('[Cotizar] Could not save to cache:', cacheErr);
+            }
 
             return NextResponse.json(result);
 
@@ -214,11 +240,42 @@ export async function POST(request: Request) {
             console.warn('[Cotizar] 99 Envíos falló, usando fallback:', enviosError.message);
         }
 
-        // ── 3. Fallback desde Firestore ───────────────────────────────────────
-        const config = await getShippingConfig();
-        const fallback = getFallbackPrice(destinoCodigo, config);
+        // ── 3. Fallback: Intentar leer del caché de cotizaciones ────────────────
+        let fallbackBasePrice: number | null = null;
+        let fallbackSource = 'config_fallback';
 
-        if (fallback.sinCobertura) {
+        try {
+            const db = getAdminDB();
+            const cachedDoc = await db.collection(QUOTES_CACHE_COLLECTION).doc(destinoCodigo).get();
+            if (cachedDoc.exists) {
+                const data = cachedDoc.data() as QuoteCacheData;
+                // Only use cache if it's less than 30 days old
+                const cacheDate = new Date(data.updatedAt).getTime();
+                const now = Date.now();
+                const daysDiff = (now - cacheDate) / (1000 * 60 * 60 * 24);
+                if (daysDiff <= 30) {
+                    fallbackBasePrice = data.valor + (aplicaContrapago ? data.valor_contrapago : 0);
+                    fallbackSource = 'cache_fallback';
+                }
+            }
+        } catch (cacheErr) {
+            console.warn('[Cotizar] Could not read from cache:', cacheErr);
+        }
+
+        // ── 4. Fallback desde Firestore Config (si no hay caché) ────────────────
+        let finalFallbackBasePrice = fallbackBasePrice;
+        let isSinCobertura = false;
+        
+        if (finalFallbackBasePrice === null) {
+            const fallback = getFallbackPrice(destinoCodigo, config);
+            if (fallback.sinCobertura) {
+                isSinCobertura = true;
+            } else {
+                finalFallbackBasePrice = fallback.precio;
+            }
+        }
+
+        if (isSinCobertura) {
             await writeAuditLog({
                 ...auditLog,
                 source: 'fallback_no_coverage',
@@ -232,42 +289,44 @@ export async function POST(request: Request) {
             }, { status: 422 });
         }
 
-        const costoBultos = calcularCostoConBultos(fallback.precio, totalWeightKg, false);
-        let precioFinal: number;
-        if (esVecino) {
-            precioFinal = Math.max(0, costoBultos.costo - subsidio);
-        } else {
-            precioFinal = Math.max(PRECIO_MINIMO_NACIONAL, costoBultos.costo - subsidio);
-        }
+        // Usar finalFallbackBasePrice como costo por bulto
+        const costoUnBulto = finalFallbackBasePrice || TARIFA_PLANA_NACIONAL;
+        const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
+
+        // El precio final descuenta el subsidio
+        let precioFinal = esVecino
+            ? Math.max(0, costoBultos.costo - subsidioDescuento)
+            : Math.max(PRECIO_MINIMO_NACIONAL, costoBultos.costo - subsidioDescuento);
+
+        const subsidioAplicado = Math.max(0, costoBultos.costo - precioFinal);
+
+        const result = {
+            gratis: false,
+            precio: precioFinal,
+            bultos,
+            esVecino,
+            mensajePaquete: costoBultos.mensajePaquete,
+            source: fallbackSource,
+            error: api99Error,
+            mensaje: 'Cotización aproximada (servicio de transportadoras con intermitencia).',
+            subsidioAplicado,
+            subsidioMensaje: !esVecino
+                ? 'En Pajarito subsidiamos parte de tu envío para que ahorres comprando directo de fábrica.'
+                : undefined,
+        };
 
         await writeAuditLog({
             ...auditLog,
-            source: 'fallback',
-            fallbackPrecio: fallback.precio,
-            fallbackZona: fallback.zonaNombre,
+            source: fallbackSource,
+            costoUnBulto,
             costoBrutoBultos: costoBultos.costo,
-            subsidioAplicado: subsidio,
+            subsidioAplicado: subsidioAplicado,
             precioFinal,
             api99Error,
             durationMs: Date.now() - startTime,
         });
 
-        return NextResponse.json({
-            gratis: false,
-            precio: precioFinal,
-            transportadora: null,
-            dias: '3-7',
-            bultos,
-            esVecino,
-            mensajePaquete: costoBultos.mensajePaquete,
-            source: 'fallback',
-            zonaNombre: fallback.zonaNombre,
-            subsidioMensaje: !esVecino
-                ? 'En Pajarito subsidiamos parte de tu envío para que ahorres comprando directo de fábrica.'
-                : undefined,
-            mensaje: '* Precio estimado. El costo exacto se confirma al despachar.',
-            subsidioAplicado: subsidio,
-        });
+        return NextResponse.json(result);
 
     } catch (error: any) {
         console.error('[Cotizar] Error:', error);

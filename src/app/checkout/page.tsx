@@ -18,6 +18,7 @@ import {
     PICKUP_ADDRESS,
     PICKUP_DISCOUNT_PCT,
     calcularPaquetes,
+    calcularSubsidio,
 } from '@/lib/shipping-zones';
 
 const ALL_CITIES_99 = Object.entries(citiesData as Record<string, { codigo: string; ciudad: string; departamento: string }>)
@@ -133,7 +134,7 @@ export default function CheckoutPage() {
                 }
             })
             .catch(() => {
-                setShippingCost(TARIFA_PLANA_NACIONAL);
+                setShippingCost(calcularSubsidio(totalKg));
                 setShippingInfo({
                     source: 'fallback',
                     mensaje: '* Precio estimado',
@@ -762,7 +763,7 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-gray-500">
                                             {esVeci
                                                 ? `🏘️ Envío gratis desde ${formatCurrency(FREE_SHIPPING_LOCAL)} (zona Veci Soachuno/a)`
-                                                : `📦 Tarifa plana nacional: ${formatCurrency(TARIFA_PLANA_NACIONAL)}`
+                                                : `📦 Tarifa nacional subsidiada (basada en peso)`
                                             }
                                         </p>
                                     )}
