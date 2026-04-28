@@ -142,7 +142,8 @@ export function calcularSubsidio(totalWeightKg: number, customTable?: Record<str
     
     // Convert keys to numbers if it's from JSON
     const getValue = (kg: number) => {
-        const val = tableToUse[kg.toString()] ?? tableToUse[kg];
+        const anyTable = tableToUse as any;
+        const val = anyTable[kg.toString()] ?? anyTable[kg];
         return typeof val === 'number' ? val : 0;
     };
     

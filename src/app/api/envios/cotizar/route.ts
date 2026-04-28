@@ -245,7 +245,7 @@ export async function POST(request: Request) {
                     valor: quote.cheapest.valor,
                     valor_contrapago: quote.cheapest.valor_contrapago,
                     transportadora: quote.cheapest.transportadora,
-                    dias: quote.cheapest.dias,
+                    dias: String(quote.cheapest.dias),
                     updatedAt: new Date().toISOString(),
                 };
                 await db.collection(QUOTES_CACHE_COLLECTION).doc(destinoCodigo).set(cacheData);
