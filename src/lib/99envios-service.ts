@@ -53,6 +53,8 @@ export interface QuoteCarrier {
     mensaje: string;
     valor: number;
     valor_contrapago: number;
+    seguro99?: number;
+    sobreflete?: number;
     dias: string | number;
     fecha_entrega: string | null;
     exito: boolean;
@@ -64,6 +66,9 @@ export interface QuoteResult {
         transportadora: string;
         valor: number;
         valor_contrapago: number;
+        seguro99: number;
+        sobreflete: number;
+        total_sin_contrapago: number;
         dias: string | number;
         fecha_entrega: string | null;
     };
@@ -139,16 +144,19 @@ export async function cotizarEnvio(
     // --- Regla crítica PRD: filtrar transportadoras con valor === 0 o sin cobertura ---
     // Iterar y encontrar la más barata con exito: true Y valor > 0
     let cheapestName = '';
-    let cheapestValor = Infinity;
+    let cheapestTotal = Infinity;
 
     for (const [name, carrier] of Object.entries(data)) {
+        // El costo real para el comercio es Flete + Seguros + Sobrefletes
+        const totalCarrier = (carrier.valor || 0) + (carrier.seguro99 || 0) + (carrier.sobreflete || 0);
+
         if (
             carrier.exito &&
             typeof carrier.valor === 'number' &&
             carrier.valor > 0 && // PRD: NUNCA mostrar valor 0
-            carrier.valor < cheapestValor
+            totalCarrier < cheapestTotal
         ) {
-            cheapestValor = carrier.valor;
+            cheapestTotal = totalCarrier;
             cheapestName = name;
         }
     }
@@ -158,11 +166,17 @@ export async function cotizarEnvio(
     }
 
     const cheapest = data[cheapestName];
+    // Consolidar el valor total (sin contrapago) para simplificar el resto de la app
+    const totalSinContrapago = (cheapest.valor || 0) + (cheapest.seguro99 || 0) + (cheapest.sobreflete || 0);
+
     return {
         cheapest: {
             transportadora: cheapestName,
-            valor: cheapest.valor,
+            valor: totalSinContrapago, // Ahora 'valor' incluye seguros y recargos
             valor_contrapago: cheapest.valor_contrapago || 0,
+            seguro99: cheapest.seguro99 || 0,
+            sobreflete: cheapest.sobreflete || 0,
+            total_sin_contrapago: totalSinContrapago,
             dias: cheapest.dias,
             fecha_entrega: cheapest.fecha_entrega,
         },
