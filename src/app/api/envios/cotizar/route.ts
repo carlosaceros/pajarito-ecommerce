@@ -157,7 +157,7 @@ export async function POST(request: Request) {
         const esVecino = isVecinoSoachuno(destinoCodigo);
         const bultos = calcularBultos(totalWeightKg);
         const config = await getShippingConfig();
-        const subsidioDescuento = calcularSubsidio(totalWeightKg, config.tarifasSubsidio);
+        const subsidio = calcularSubsidio(totalWeightKg, config.tarifasSubsidio);
 
         auditLog = {
             destinoCodigo,
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
             bultos,
             aplicaContrapago,
             esVecino,
-            subsidioDescuento,
+            subsidio,
             source: 'unknown',
         };
 
@@ -198,7 +198,7 @@ export async function POST(request: Request) {
             const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
 
             // El precio final descuenta el subsidio. Si es <= 0, es gratis.
-            let precioFinal = Math.max(0, costoBultos.costo - subsidioDescuento);
+            let precioFinal = Math.max(0, costoBultos.costo - subsidio);
 
             // El subsidio aplicado es la diferencia
             const subsidioAplicado = Math.max(0, costoBultos.costo - precioFinal);
@@ -323,7 +323,7 @@ export async function POST(request: Request) {
         const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
 
         // El precio final descuenta el subsidio
-        let precioFinal = Math.max(0, costoBultos.costo - subsidioDescuento);
+        let precioFinal = Math.max(0, costoBultos.costo - subsidio);
 
         const subsidioAplicado = Math.max(0, costoBultos.costo - precioFinal);
 
