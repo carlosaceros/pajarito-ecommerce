@@ -5,13 +5,11 @@ import { X, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/products';
-import { Truck, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import PaqueteUpsell from './PaqueteUpsell';
-import { FREE_SHIPPING_LOCAL } from '@/lib/shipping-zones';
 
 /**
  * CartDrawer — PRD 2026
- * - Doble umbral de envío gratis: $100k local / $180k nacional
  * - Smart Upsell (PaqueteUpsell) integrado
  * - Tooltip subsidiado de marca
  */
@@ -22,10 +20,6 @@ export default function CartDrawer() {
     const totalPrice = getTotalPrice();
     const totalSavings = getTotalSavings();
     const totalKg = getTotalWeightKg();
-
-    // Umbral local para mensaje motivador
-    const progressLocal = Math.min((totalPrice / FREE_SHIPPING_LOCAL) * 100, 100);
-    const amountToFreeShippingLocal = FREE_SHIPPING_LOCAL - totalPrice;
 
     return (
         <AnimatePresence>
@@ -67,37 +61,6 @@ export default function CartDrawer() {
                                 <X size={24} className="text-gray-400 hover:text-red-600" />
                             </motion.button>
                         </div>
-
-                        {/* Envío gratis progress (Solo local) */}
-                        {cart.length > 0 && (
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-b border-gray-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Truck size={18} className={progressLocal >= 100 ? "text-green-600" : "text-gray-500"} />
-                                    <p className="text-sm font-bold text-gray-800">
-                                        {progressLocal >= 100 ? (
-                                            <span>
-                                                ✅ <span className="text-green-700">¡Envío GRATIS Local conseguido! 🎉</span>
-                                            </span>
-                                        ) : (
-                                            <span>
-                                                Te faltan <span className="text-red-600">{formatCurrency(amountToFreeShippingLocal)}</span> para envío GRATIS Local
-                                                <span className="block text-[11px] text-gray-500 font-normal mt-0.5">
-                                                    *Solo aplica para Soacha y sur de Bogotá
-                                                </span>
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${progressLocal}%` }}
-                                        transition={{ duration: 0.5, ease: "easeOut" }}
-                                        className={`h-full rounded-full ${progressLocal >= 100 ? 'bg-green-500' : 'bg-red-500'}`}
-                                    />
-                                </div>
-                            </div>
-                        )}
 
                         {/* Cart Items */}
                         <div className="flex-1 overflow-y-auto">
