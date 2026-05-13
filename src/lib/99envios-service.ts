@@ -102,18 +102,23 @@ export async function cotizarEnvio(
     const yyyy = tomorrow.getFullYear();
     const fecha = `${dd}-${mm}-${yyyy}`;
 
-    // Dimensiones aproximadas proporcionales al peso
-    const alto = Math.max(20, Math.round(pesoKg * 1.5));
-    const largo = Math.max(15, Math.round(pesoKg * 1.2));
-    const ancho = Math.max(15, Math.round(pesoKg * 1.0));
+    // PRD: Máximo 30kg por guía física en 99 Envíos para evitar rechazo de transportadora (ej. Interrapidisimo)
+    const numGuias = Math.ceil(pesoKg / 30);
+    const pesoParaCotizar = Math.min(30, Math.ceil(pesoKg / numGuias));
+    const valorDeclaradoGuia = Math.max(75000, Math.round(valorDeclarado / numGuias));
+
+    // Dimensiones aproximadas proporcionales al peso de la guía individual
+    const alto = Math.max(20, Math.round(pesoParaCotizar * 1.5));
+    const largo = Math.max(15, Math.round(pesoParaCotizar * 1.2));
+    const ancho = Math.max(15, Math.round(pesoParaCotizar * 1.0));
 
     const payload = {
         destino: { codigo: destinoCodigo, nombre: destinoNombre },
         origen: ORIGEN,
         IdTipoEntrega: 1,
         IdServicio: 1,
-        valorDeclarado: Math.max(75000, valorDeclarado),
-        peso: Math.min(pesoKg, 150), // Enviar peso total real para obtener la tarifa combinada exacta de la mensajería
+        valorDeclarado: valorDeclaradoGuia,
+        peso: pesoParaCotizar,
         alto,
         largo,
         ancho,
@@ -140,6 +145,14 @@ export async function cotizarEnvio(
     }
 
     const data: Record<string, QuoteCarrier> = await res.json();
+
+    // Multiplicar los valores devueltos por el número de guías físicas necesarias para reflejar el costo bruto total
+    for (const carrier of Object.values(data)) {
+        if (typeof carrier.valor === 'number') carrier.valor *= numGuias;
+        if (typeof carrier.valor_contrapago === 'number') carrier.valor_contrapago *= numGuias;
+        if (typeof carrier.seguro99 === 'number') carrier.seguro99 *= numGuias;
+        if (typeof carrier.sobreflete === 'number') carrier.sobreflete *= numGuias;
+    }
 
     // --- Regla crítica PRD: filtrar transportadoras con valor === 0 o sin cobertura ---
     // Iterar y encontrar la más barata con exito: true Y valor > 0
@@ -172,7 +185,7 @@ export async function cotizarEnvio(
     return {
         cheapest: {
             transportadora: cheapestName,
-            valor: totalSinContrapago, // Ahora 'valor' incluye seguros y recargos
+            valor: totalSinContrapago, // Ahora 'valor' incluye seguros y recargos escalados por numGuias
             valor_contrapago: cheapest.valor_contrapago || 0,
             seguro99: cheapest.seguro99 || 0,
             sobreflete: cheapest.sobreflete || 0,
@@ -210,14 +223,17 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
     const token = await getAuthToken();
     const pesoKg = data.pesoKg ?? 5;
 
+    // PRD: Máximo 30kg por guía física en 99 Envíos
+    const pesoGuia = Math.min(pesoKg, 30);
+
     const payload = {
         IdTipoEntrega: 1,
         IdServicio: 1,
         AplicaContrapago: !!(data.valorContrapago && data.valorContrapago > 0),
-        peso: Math.min(pesoKg, 150),
-        largo: Math.max(15, Math.round(pesoKg * 1.2)),
-        ancho: Math.max(15, Math.round(pesoKg * 1.0)),
-        alto: Math.max(20, Math.round(pesoKg * 1.5)),
+        peso: pesoGuia,
+        largo: Math.max(15, Math.round(pesoGuia * 1.2)),
+        ancho: Math.max(15, Math.round(pesoGuia * 1.0)),
+        alto: Math.max(20, Math.round(pesoGuia * 1.5)),
         diceContener: data.diceContener || 'Productos de limpieza y hogar',
         valorDeclarado: Math.max(75000, data.valorDeclarado),
         seguro99: false,
