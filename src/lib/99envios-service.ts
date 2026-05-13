@@ -113,7 +113,7 @@ export async function cotizarEnvio(
         IdTipoEntrega: 1,
         IdServicio: 1,
         valorDeclarado: Math.max(75000, valorDeclarado),
-        peso: Math.min(pesoKg, 20), // API máx. 20kg por guía (actualizado según nueva regla bulto)
+        peso: Math.min(pesoKg, 150), // Enviar peso total real para obtener la tarifa combinada exacta de la mensajería
         alto,
         largo,
         ancho,
@@ -214,7 +214,7 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
         IdTipoEntrega: 1,
         IdServicio: 1,
         AplicaContrapago: !!(data.valorContrapago && data.valorContrapago > 0),
-        peso: Math.min(pesoKg, 20),
+        peso: Math.min(pesoKg, 150),
         largo: Math.max(15, Math.round(pesoKg * 1.2)),
         ancho: Math.max(15, Math.round(pesoKg * 1.0)),
         alto: Math.max(20, Math.round(pesoKg * 1.5)),

@@ -203,26 +203,31 @@ export async function POST(request: Request) {
         let api99Raw: Record<string, unknown> | null = null;
 
         try {
-            const pesoParaCotizar = Math.min(totalWeightKg, PESO_MAX_BULTO_KG);
-            const valorDeclaradoPorBulto = Math.max(10000, Math.round((subtotal || 50000) / bultos));
+            // Enviar el peso real completo y el subtotal total para que la mensajería
+            // consolide la tarifa combinada real de todos los paquetes nativamente.
+            const valorDeclaradoParaCotizar = Math.max(75000, subtotal || 50000);
             const quote = await cotizarEnvio(
                 destinoCodigo,
                 destinoNombre || '',
-                valorDeclaradoPorBulto,
+                valorDeclaradoParaCotizar,
                 aplicaContrapago,
-                pesoParaCotizar,
+                totalWeightKg,
             );
 
             api99Raw = quote.all as unknown as Record<string, unknown>;
 
-            const costoUnBulto = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
-            const costoBultos = calcularCostoConBultos(costoUnBulto, totalWeightKg, false);
+            // La API de 99 Envíos ya devuelve el costo bruto total combinado para el peso enviado
+            const costoBrutoTotal = quote.cheapest.valor + (aplicaContrapago ? quote.cheapest.valor_contrapago : 0);
+            const costoUnBulto = Math.round(costoBrutoTotal / bultos); // Para referencia en logs
 
-            // El precio final descuenta el subsidio. Si es <= 0, es gratis.
-            let precioFinal = Math.max(0, costoBultos.costo - subsidio);
+            // El precio final descuenta el subsidio real acumulado. Si es <= 0, es gratis.
+            let precioFinal = Math.max(0, costoBrutoTotal - subsidio);
 
-            // El subsidio aplicado es la diferencia
-            const subsidioAplicado = Math.max(0, costoBultos.costo - precioFinal);
+            // El subsidio aplicado real es la diferencia
+            const subsidioAplicado = Math.max(0, costoBrutoTotal - precioFinal);
+
+            // Generar mensaje informativo de paquetes para la UI
+            const mensajePaquete = bultos > 1 ? `Tu pedido requiere ${bultos} paquetes (${PESO_MAX_BULTO_KG}kg máx. c/u).` : undefined;
 
             const result = {
                 gratis: precioFinal === 0,
@@ -234,7 +239,7 @@ export async function POST(request: Request) {
                 fechaEntrega: quote.cheapest.fecha_entrega,
                 bultos,
                 esVecino,
-                mensajePaquete: costoBultos.mensajePaquete,
+                mensajePaquete,
                 source: '99envios',
                 mensaje: precioFinal === 0 ? '🎁 Tu subsidio cubre el 100% del envío. ¡Es GRATIS!' : undefined,
                 cotizaciones: quote.all,
@@ -251,12 +256,13 @@ export async function POST(request: Request) {
                 valorBase99: quote.cheapest.valor,
                 valorContrapago99: quote.cheapest.valor_contrapago,
                 costoUnBulto,
-                costoBrutoBultos: costoBultos.costo,
-                subsidioAplicado: subsidioAplicado,
+                costoBrutoBultos: costoBrutoTotal,
+                subsidioAplicado,
                 precioFinal,
                 api99Cotizaciones: api99Raw,
                 durationMs: Date.now() - startTime,
             });
+
 
             // Save to cache
             try {
