@@ -23,6 +23,7 @@ import {
     calcularCostoConBultos,
     PESO_MAX_BULTO_KG,
     calcularSubsidio,
+    calcularSubsidioReal,
 } from '@/lib/shipping-zones';
 
 const CONFIG_DOC_PATH = 'admin_config/shipping';
@@ -148,6 +149,7 @@ export async function POST(request: Request) {
             subtotal,
             aplicaContrapago = true,
             totalWeightKg = 5,
+            itemsSizes,
         } = body;
 
         if (!destinoCodigo) {
@@ -157,7 +159,7 @@ export async function POST(request: Request) {
         const esVecino = isVecinoSoachuno(destinoCodigo);
         const bultos = calcularBultos(totalWeightKg);
         const config = await getShippingConfig();
-        const subsidio = calcularSubsidio(totalWeightKg, config.tarifasSubsidio);
+        const subsidio = calcularSubsidioReal(itemsSizes, totalWeightKg);
 
         auditLog = {
             destinoCodigo,
@@ -171,12 +173,30 @@ export async function POST(request: Request) {
             source: 'unknown',
         };
 
-        // ── 1. Envío gratis (Desactivado por PRD 27 Abril - Todo pasa por subsidio) ──
-        /* 
-        if (esVecino && subtotal && subtotal >= FREE_SHIPPING_LOCAL) {
-            ...
-        } 
-        */
+        // ── 1. Envío gratis local con Flota Propia (Sabana de Bogotá) ──
+        if (esVecino) {
+            const result = {
+                gratis: true,
+                precio: 0,
+                precioBase: 0,
+                valorContrapago: 0,
+                transportadora: 'Flota Propia Pajarito',
+                dias: '1-2',
+                bultos,
+                esVecino: true,
+                source: 'flota_propia',
+                mensaje: '🚚 Entrega gratuita con flota propia de Pajarito.',
+                subsidioAplicado: subsidio,
+            };
+            await writeAuditLog({
+                ...auditLog,
+                source: 'flota_propia',
+                transportadora: 'Flota Propia Pajarito',
+                precioFinal: 0,
+                durationMs: Date.now() - startTime,
+            });
+            return NextResponse.json(result);
+        }
 
         // ── 2. Intentar 99 Envíos ─────────────────────────────────────────────
         let api99Error: string | null = null;
@@ -184,10 +204,11 @@ export async function POST(request: Request) {
 
         try {
             const pesoParaCotizar = Math.min(totalWeightKg, PESO_MAX_BULTO_KG);
+            const valorDeclaradoPorBulto = Math.max(10000, Math.round((subtotal || 50000) / bultos));
             const quote = await cotizarEnvio(
                 destinoCodigo,
                 destinoNombre || '',
-                subtotal || 50000,
+                valorDeclaradoPorBulto,
                 aplicaContrapago,
                 pesoParaCotizar,
             );

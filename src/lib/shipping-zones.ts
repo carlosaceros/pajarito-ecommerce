@@ -4,11 +4,19 @@
  * PRD: Logística 2026 — Biocambio360 S.A.S.
  */
 
-// Códigos DANE de la zona "Veci Soachuno/a" (Soacha, Bosa, Sibaté y sur de Bogotá)
+// Códigos DANE de la zona "Veci Soachuno/a" (Soacha, Bosa, Sibaté y sur de Bogotá + Sabana)
 export const SOACHA_ZONE_PREFIXES = [
     '25754', // Soacha
     '25755', // Sibaté
-    '11001', // Bogotá D.C. (incluye Bosa, aunque es localidad)
+    '11001', // Bogotá D.C.
+    '25126', // Cajicá
+    '25175', // Chía
+    '25290', // Fusagasugá
+    '25214', // Cota
+    '25473', // Mosquera
+    '25430', // Madrid
+    '25286', // Funza
+    '25899', // Zipaquirá
 ];
 
 // Ciudades de la zona local por nombre (para UI checkout)
@@ -17,6 +25,20 @@ export const SOACHA_ZONE_CITIES = [
     'SIBATE',
     'SIBATÉ',
     'BOSA',
+    'BOGOTA',
+    'BOGOTÁ',
+    'CAJICA',
+    'CAJICÁ',
+    'CHIA',
+    'CHÍA',
+    'FUSAGASUGA',
+    'FUSAGASUGÁ',
+    'COTA',
+    'MOSQUERA',
+    'MADRID',
+    'FUNZA',
+    'ZIPAQUIRA',
+    'ZIPAQUIRÁ',
 ];
 
 // Umbrales de envío gratis (COP) - DESACTIVADOS POR PRD 27 ABRIL
@@ -129,6 +151,34 @@ export const DEFAULT_SUBSIDIOS: Record<number, number> = {
     21: 13000, 22: 15000, 23: 16000, 24: 17000, 25: 18000, 26: 20000, 27: 21000, 28: 22000, 29: 23000, 30: 24000,
     31: 25000, 32: 27000, 33: 28000, 34: 29000, 35: 30000, 36: 32000, 37: 33000, 38: 34000, 39: 35000, 40: 24000
 };
+
+export interface ItemSizeQty {
+    size: string;
+    cantidad: number;
+}
+
+/**
+ * Calcula el subsidio sumando el aporte exacto de cada ítem en el carrito según la matriz corporativa.
+ */
+export function calcularSubsidioReal(itemsSizes?: ItemSizeQty[], totalWeightKg?: number): number {
+    if (itemsSizes && itemsSizes.length > 0) {
+        return itemsSizes.reduce((total, item) => {
+            let subsidioUnitario = 0;
+            if (item.size === '20L') subsidioUnitario = 12000;
+            else if (item.size === '10L') subsidioUnitario = 12000;
+            else if (item.size === '3.8L') subsidioUnitario = 5000; // Aporte estándar en combos
+            else if (item.size === '1L') subsidioUnitario = 1000;
+            
+            // Si es el ÚNICO ítem en el carrito y es un Galón, la tabla estándar le da 6k
+            if (itemsSizes.length === 1 && item.cantidad === 1 && item.size === '3.8L') {
+                subsidioUnitario = 6000;
+            }
+            
+            return total + (subsidioUnitario * item.cantidad);
+        }, 0);
+    }
+    return calcularSubsidio(totalWeightKg || 0);
+}
 
 /**
  * Retorna el valor de subsidio (descuento) que se le debe aplicar al flete real del cliente.

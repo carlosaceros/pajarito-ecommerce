@@ -104,6 +104,7 @@ export default function CheckoutPage() {
                 subtotal,
                 aplicaContrapago: paymentMethod === 'contraentrega',
                 totalWeightKg: totalKg,
+                itemsSizes: cart.map(item => ({ size: item.size, cantidad: item.cantidad })),
             }),
         })
             .then(r => r.json())
@@ -113,7 +114,7 @@ export default function CheckoutPage() {
                     setShippingInfo({
                         source: 'free_shipping',
                         esVeci: data.esVeci,
-                        bultos: data.paquetes,
+                        bultos: data.paquetes || data.bultos,
                         mensaje: data.mensaje,
                     });
                 } else if (data.sinCobertura) {
@@ -127,7 +128,7 @@ export default function CheckoutPage() {
                         dias: data.dias,
                         mensaje: data.mensaje,
                         subsidioMensaje: data.subsidioMensaje,
-                        bultos: data.paquetes,
+                        bultos: data.paquetes || data.bultos,
                         mensajePaquete: data.mensajePaquete,
                         esVeci: data.esVeci,
                     });
@@ -141,7 +142,7 @@ export default function CheckoutPage() {
                     subsidioMensaje: 'En Pajarito subsidiamos parte de tu envío nacional para que ahorres comprando directo de fábrica.',
                 });
             });
-    }, [destinoCodigo, formData.ciudad, paymentMethod, subtotal, totalKg]);
+    }, [destinoCodigo, formData.ciudad, paymentMethod, subtotal, totalKg, cart]);
 
     useEffect(() => {
         const timer = setTimeout(cotizarEnvio, 300);
