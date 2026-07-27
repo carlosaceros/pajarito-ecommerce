@@ -95,6 +95,8 @@ const organizationSchema = {
   "sameAs": []
 };
 
+import MetaPixel from "@/components/MetaPixel";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -112,6 +114,7 @@ export default function RootLayout({
         />
       </head>
       <body style={{ fontFamily: '"Space Grotesk", sans-serif' }}>
+        <MetaPixel />
         <AuthProvider>
           <CartProvider>
             <GlobalHeader />

@@ -248,7 +248,7 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
             idLocalidad: data.destinatario.idLocalidad,
             correo: data.destinatario.correo || '',
         },
-        Observaciones: data.observaciones || '',
+        Observaciones: data.observaciones || 'FRÁGIL - LÍQUIDOS',
         transportadora: {
             pais: 'colombia',
             nombre: data.transportadora,
@@ -269,4 +269,51 @@ export async function crearPreenvio(data: PreenvioData): Promise<any> {
     const result = await res.json();
     if (!res.ok) throw new Error(`Preenvío falló: ${JSON.stringify(result)}`);
     return result;
+}
+
+/**
+ * Obtiene el PDF de una o varias guías en formato 'sticker' (adhesivo 10x15cm) o 'estandar' (normal A4/Media carta).
+ */
+export async function obtenerPdfGuia(
+    guias: string[],
+    tipoPdf: 'sticker' | 'estandar' = 'sticker'
+): Promise<{ buffer: Buffer; contentType: string }> {
+    const token = await getAuthToken();
+
+    // Normalizar el nombre del endpoint según la API de 99 Envíos ('sticker' o 'estandar' / 'pdf')
+    const pdfEndpoint = tipoPdf === 'sticker' ? 'sticker' : 'pdf';
+
+    const res = await fetch(`${API_BASE}/pdf/${pdfEndpoint}`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/pdf, application/json',
+        },
+        body: JSON.stringify({ guias }),
+    });
+
+    if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Error ${res.status} al obtener PDF 99 Envíos (${tipoPdf}): ${errText.slice(0, 200)}`);
+    }
+
+    const contentType = res.headers.get('content-type') || 'application/pdf';
+    
+    // Si la API devuelve JSON con base64 o URL directa
+    if (contentType.includes('application/json')) {
+        const json = await res.json();
+        if (json.pdfBase64) {
+            return { buffer: Buffer.from(json.pdfBase64, 'base64'), contentType: 'application/pdf' };
+        }
+        if (json.url) {
+            const pdfRes = await fetch(json.url);
+            const arrayBuffer = await pdfRes.arrayBuffer();
+            return { buffer: Buffer.from(arrayBuffer), contentType: 'application/pdf' };
+        }
+    }
+
+    // Respuesta binaria directa
+    const arrayBuffer = await res.arrayBuffer();
+    return { buffer: Buffer.from(arrayBuffer), contentType: 'application/pdf' };
 }

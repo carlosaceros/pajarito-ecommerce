@@ -9,6 +9,7 @@ import { validateCedula, validateCelular, formatCurrency } from '@/lib/checkout-
 import citiesData from '@/lib/cities-99envios.json';
 import { createOrder } from '@/lib/orders-service';
 import { Order } from '@/types/order';
+import * as fp from '@/lib/fpixel';
 import {
     isVeciSoacha,
     isVeciSoachaByCityName,
@@ -163,7 +164,15 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         if (isHydrated && cart.length === 0) router.push('/');
-    }, [isHydrated, cart, router]);
+        if (isHydrated && cart.length > 0) {
+            fp.event('InitiateCheckout', {
+                value: subtotal,
+                currency: 'COP',
+                num_items: cart.length,
+                content_ids: cart.map(item => item.product.id),
+            });
+        }
+    }, [isHydrated, cart, router, subtotal]);
 
     // ── Handlers ──────────────────────────────────────────────────────────────
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -205,6 +214,8 @@ export default function CheckoutPage() {
                     email: formData.email || undefined,
                     departamento: formData.departamento,
                     ciudad: formData.ciudad,
+                    codigoDane: destinoCodigo || undefined,
+                    idLocalidad: destinoCodigo ? destinoCodigo.slice(0, 5) : undefined,
                     direccion: tipoEntrega === 'pickup' ? PICKUP_ADDRESS : formData.direccion,
                     notas: tipoEntrega === 'pickup'
                         ? `PICK-UP en San Nicolás. ${formData.notas || ''}`

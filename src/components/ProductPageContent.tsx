@@ -11,6 +11,8 @@ import { useCart } from '@/lib/cart-context';
 import ProductCard from '@/components/ProductCard';
 import Toast from '@/components/Toast';
 
+import * as fp from '@/lib/fpixel';
+
 // Fixed size order for product detail page (only main sizes)
 const SIZE_ORDER: ProductSize[] = ['3.8L', '10L', '20L'];
 
@@ -37,6 +39,16 @@ export default function ProductPageContent({ product, relatedProducts }: Product
     const ctaRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        fp.event('ViewContent', {
+            content_name: product.nombre,
+            content_ids: [product.id],
+            content_type: 'product',
+            value: product.precios[selectedSize] ?? 0,
+            currency: 'COP',
+        });
+    }, [product, selectedSize]);
+
+    useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
                 // If CTA is not visible on screen, we show the sticky bar
@@ -59,8 +71,16 @@ export default function ProductPageContent({ product, relatedProducts }: Product
     );
 
     const handleAddToCart = () => {
-        addToCart(product, selectedSize, product.precios[selectedSize] ?? 0, quantity);
+        const itemPrice = product.precios[selectedSize] ?? 0;
+        addToCart(product, selectedSize, itemPrice, quantity);
         setShowToast(true);
+        fp.event('AddToCart', {
+            content_name: `${product.nombre} ${selectedSize}`,
+            content_ids: [product.id],
+            content_type: 'product',
+            value: itemPrice * quantity,
+            currency: 'COP',
+        });
     };
 
     const toggleSection = (section: string) => {

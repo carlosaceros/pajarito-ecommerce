@@ -509,11 +509,128 @@ export default function PedidosPage() {
                                                         <p className="font-medium">{activeOrder.cliente.departamento}</p>
                                                     </div>
                                                 </div>
+                                                {activeOrder.cliente.codigoDane && (
+                                                    <div className="text-xs text-gray-500">
+                                                        <span>Código DANE: </span>
+                                                        <span className="font-mono font-bold text-gray-700">{activeOrder.cliente.codigoDane}</span>
+                                                    </div>
+                                                )}
                                                 {activeOrder.cliente.notas && (
                                                     <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100 mt-2">
                                                         <p className="text-xs text-yellow-800 font-bold mb-1">Notas de entrega:</p>
                                                         <p className="text-sm text-yellow-900 italic">"{activeOrder.cliente.notas}"</p>
                                                     </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Módulo de Guía de Envío 99 Envíos */}
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                <Package className="text-indigo-600" size={18} />
+                                                Guía de Envío 99 Envíos
+                                            </h3>
+                                            <div className="bg-gradient-to-br from-slate-50 to-indigo-50/50 border-2 border-indigo-100 rounded-xl p-4 space-y-3">
+                                                {activeOrder.guiaEnvio ? (
+                                                    <div className="space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <div>
+                                                                <span className="text-xs text-gray-500 uppercase font-bold">Número de Guía</span>
+                                                                <p className="text-lg font-black font-mono text-indigo-900">{activeOrder.guiaEnvio.guiaNumber}</p>
+                                                            </div>
+                                                            <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                                                {activeOrder.guiaEnvio.transportadora}
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 border-t pt-2">
+                                                            <div><strong>Bultos:</strong> {activeOrder.guiaEnvio.bultos}</div>
+                                                            <div><strong>Peso:</strong> {activeOrder.guiaEnvio.pesoKg} kg</div>
+                                                            <div><strong>Obs:</strong> {activeOrder.guiaEnvio.observaciones || 'FRÁGIL - LÍQUIDOS'}</div>
+                                                            <div><strong>Fecha:</strong> {new Date(activeOrder.guiaEnvio.fechaCreacion).toLocaleDateString('es-CO')}</div>
+                                                        </div>
+                                                        <div className="pt-2 flex flex-col gap-2">
+                                                            <a
+                                                                href={`/api/envios/pdf-guia?guia=${activeOrder.guiaEnvio.guiaNumber}&tipo=sticker`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                                                            >
+                                                                🏷️ Imprimir Guía (Sticker Adhesivo 10x15cm)
+                                                            </a>
+                                                            <a
+                                                                href={`/api/envios/pdf-guia?guia=${activeOrder.guiaEnvio.guiaNumber}&tipo=estandar`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full bg-white border border-indigo-200 hover:border-indigo-400 text-indigo-900 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                                                            >
+                                                                📄 Imprimir Guía (Formato Estándar Normal)
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <form
+                                                        onSubmit={async (e) => {
+                                                            e.preventDefault();
+                                                            const formData = new FormData(e.currentTarget);
+                                                            const transportadora = formData.get('transportadora') as string;
+                                                            const pesoKg = +(formData.get('pesoKg') || 5);
+                                                            const bultos = +(formData.get('bultos') || 1);
+                                                            const observaciones = (formData.get('observaciones') as string) || 'FRÁGIL - LÍQUIDOS';
+
+                                                            try {
+                                                                const res = await fetch('/api/envios/crear-guia', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        orderId: activeOrder.id,
+                                                                        transportadora,
+                                                                        pesoKg,
+                                                                        bultos,
+                                                                        observaciones,
+                                                                    }),
+                                                                });
+                                                                const data = await res.json();
+                                                                if (!res.ok) throw new Error(data.error || 'Error al generar guía');
+                                                                alert(`¡Guía #${data.guiaNumber} generada exitosamente con ${transportadora.toUpperCase()}!`);
+                                                                setActiveOrder(prev => prev ? { ...prev, guiaEnvio: data.labelData, status: 'preparacion' } : prev);
+                                                            } catch (err: any) {
+                                                                alert(`No se pudo generar la guía: ${err.message}`);
+                                                            }
+                                                        }}
+                                                        className="space-y-3"
+                                                    >
+                                                        <p className="text-xs text-gray-600 font-medium">Generar nueva guía física en 99 Envíos:</p>
+                                                        <div>
+                                                            <label className="block text-[11px] font-bold text-gray-700 mb-1">Transportadora</label>
+                                                            <select name="transportadora" className="w-full text-xs p-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                                                <option value="interrapidisimo">Interrapidísimo</option>
+                                                                <option value="tcc">TCC</option>
+                                                                <option value="servientrega">Servientrega</option>
+                                                                <option value="coordinadora">Coordinadora</option>
+                                                                <option value="envia">Envía</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <label className="block text-[11px] font-bold text-gray-700 mb-1">Peso (kg)</label>
+                                                                <input type="number" name="pesoKg" defaultValue={5} min={1} max={30} className="w-full text-xs p-2 border border-gray-200 rounded-lg bg-white" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-[11px] font-bold text-gray-700 mb-1">Bultos</label>
+                                                                <input type="number" name="bultos" defaultValue={1} min={1} max={10} className="w-full text-xs p-2 border border-gray-200 rounded-lg bg-white" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[11px] font-bold text-gray-700 mb-1">Observaciones</label>
+                                                            <input type="text" name="observaciones" defaultValue="FRÁGIL - LÍQUIDOS" className="w-full text-xs p-2 border border-gray-200 rounded-lg bg-white" />
+                                                        </div>
+                                                        <button
+                                                            type="submit"
+                                                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow transition-all"
+                                                        >
+                                                            🚀 Generar Guía con 99 Envíos
+                                                        </button>
+                                                    </form>
                                                 )}
                                             </div>
                                         </div>

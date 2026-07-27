@@ -17,7 +17,24 @@ export interface OrderCustomer {
     departamento: string;
     ciudad: string;
     direccion: string;
+    codigoDane?: string; // Código DANE 8 dígitos (ej: 11001000)
+    idLocalidad?: string; // Código DANE 5 dígitos (ej: 11001)
     notas?: string;
+}
+
+export interface ShippingLabelData {
+    guiaNumber: string;
+    transportadora: string; // 'interrapidisimo' | 'tcc' | 'servientrega' | 'coordinadora' | 'envia'
+    fechaCreacion: string;
+    estadoGuia: 'generada' | 'en_transito' | 'entregada' | 'novedad' | 'cancelada';
+    bultos: number;
+    pesoKg: number;
+    valorDeclarado: number;
+    fleteCosto?: number;
+    diceContener?: string;
+    observaciones?: string;
+    pdfStickerUrl?: string;
+    pdfEstandarUrl?: string;
 }
 
 export interface OrderItem {
@@ -58,6 +75,8 @@ export interface Order {
     bultos?: number;
     /** Descuento aplicado (ej: pick-up 5%) */
     descuento?: number;
+    /** Información de la guía de envío 99 Envíos */
+    guiaEnvio?: ShippingLabelData;
     status: OrderStatus;
     timeline: TimelineEvent[];
     whatsappConversation?: string[];

@@ -8,6 +8,8 @@ import { formatCurrency } from '@/lib/checkout-utils';
 import { useCart } from '@/lib/cart-context';
 import Link from 'next/link';
 
+import * as fp from '@/lib/fpixel';
+
 interface Order {
     id: string;
     cliente: {
@@ -48,6 +50,15 @@ export default function ConfirmacionPage({ params }: { params: Promise<{ orderId
 
             const parsedOrder = JSON.parse(orderData);
             setOrder(parsedOrder);
+
+            // Track Meta Pixel Purchase event for ROAS
+            fp.event('Purchase', {
+                value: parsedOrder.total || 0,
+                currency: 'COP',
+                order_id: orderId,
+                num_items: parsedOrder.productos?.length || 0,
+                content_ids: parsedOrder.productos?.map((p: any) => p.product?.id || p.id) || [],
+            });
 
             // Clear cart after successful order
             clearCart();

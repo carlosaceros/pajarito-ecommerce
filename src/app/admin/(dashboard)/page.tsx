@@ -395,6 +395,17 @@ export default function AdminDashboard() {
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            onClick={() => router.push('/admin/guias')}
+                            className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-indigo-200 transition-colors"
+                        >
+                            <Truck className="text-indigo-600 mb-3" size={24} />
+                            <p className="font-black text-gray-900 mb-1">Gestión de Guías & BI</p>
+                            <p className="text-xs text-gray-600">Impresión, CRUD y métricas de envíos</p>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => router.push('/admin/auditoria-envios')}
                             className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-left hover:border-violet-200 transition-colors"
                         >
