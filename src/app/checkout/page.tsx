@@ -69,7 +69,7 @@ export default function CheckoutPage() {
     const [citySearch, setCitySearch] = useState('');
     const [citySearchOpen, setCitySearchOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<'contraentrega' | 'wompi'>('contraentrega');
+    const [paymentMethod, setPaymentMethod] = useState<'contraentrega' | 'wompi'>('wompi');
     const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('domicilio');
     const [showSubsidioTooltip, setShowSubsidioTooltip] = useState(false);
 

@@ -147,7 +147,7 @@ export async function POST(request: Request) {
             destinoCodigo,
             destinoNombre,
             subtotal,
-            aplicaContrapago = true,
+            aplicaContrapago = false,
             totalWeightKg = 5,
             itemsSizes,
         } = body;

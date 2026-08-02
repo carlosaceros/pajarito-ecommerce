@@ -89,7 +89,7 @@ export async function cotizarEnvio(
     destinoCodigo: string,
     destinoNombre: string,
     valorDeclarado: number,
-    aplicaContrapago: boolean = true,
+    aplicaContrapago: boolean = false,
     pesoKg: number = 5,
 ): Promise<QuoteResult> {
     const token = await getAuthToken();
