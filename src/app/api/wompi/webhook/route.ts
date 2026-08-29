@@ -103,7 +103,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        // 2. Build human-readable note
+        // 2. Check if order exists in local database; if not, forward to secondary store
+        const db = getAdminDB();
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+
+        if (!orderDoc.exists) {
+            const forwardUrl = process.env.FORWARD_WEBHOOK_URL || 'https://www.biocambio360.com/api/wompi/webhook';
+            console.log(`[Wompi] Order ${orderId} not found locally. Forwarding webhook to ${forwardUrl}...`);
+            try {
+                const forwardRes = await fetch(forwardUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+                const forwardData = await forwardRes.json();
+                return NextResponse.json(forwardData, { status: forwardRes.status });
+            } catch (forwardErr: any) {
+                console.error(`[Wompi] Error forwarding webhook to ${forwardUrl}:`, forwardErr);
+                return NextResponse.json({ error: 'Order not found locally and forwarding failed' }, { status: 404 });
+            }
+        }
+
+        // 3. Build human-readable note
         const declineRaw = transaction.payment_method?.extra?.decline_reason;
         const declineLabel = declineRaw
             ? (DECLINE_REASON_LABELS[declineRaw] ?? declineRaw)
@@ -163,15 +184,11 @@ export async function POST(request: Request) {
                 console.log(`[Wompi] Order ${orderId} → ${newStatus} (${transaction.status})`);
 
                 // 4. Side effects for APPROVED only
-                if (transaction.status === 'APPROVED') {
-                    const db = getAdminDB();
-                    const orderDoc = await db.collection('orders').doc(orderId).get();
-
-                    if (orderDoc.exists) {
-                        const orderData = orderDoc.data()!;
-                        const customerEmail = orderData.cliente?.email;
-                        const customerName = orderData.cliente?.nombre || 'Cliente';
-                        const total = orderData.total ?? amountCOP;
+                if (transaction.status === 'APPROVED' && orderDoc.exists) {
+                    const orderData = orderDoc.data()!;
+                    const customerEmail = orderData.cliente?.email;
+                    const customerName = orderData.cliente?.nombre || 'Cliente';
+                    const total = orderData.total ?? amountCOP;
 
                         // Push notification to admin
                         sendAdminPushNotification({
@@ -189,7 +206,6 @@ export async function POST(request: Request) {
                                 total,
                             }).catch(e => console.warn('[Email] Payment email failed:', e));
                         }
-                    }
                 }
 
                 // 5. Admin notification for DECLINED payments
