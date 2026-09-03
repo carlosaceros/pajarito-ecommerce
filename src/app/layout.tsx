@@ -31,7 +31,11 @@ export const metadata: Metadata = {
     apple: '/favicon.png',
   },
   verification: {
-    google: ["D8korwn8MSRpH3qaGd1j5outfbLxO_WUtxe7Ok8vhz8", "htb2Q-eSNiKBROAxC3B3cERhsIdD7VD3qWmeUs8vYVw"],
+    google: [
+      "D8korwn8MSRpH3qaGd1j5outfbLxO_WUtxe7Ok8vhz8",
+      "htb2Q-eSNiKBROAxC3B3cERhsIdD7VD3qWmeUs8vYVw",
+      "Dj5bp7TN_9s2g11ZOYcw0RlB9QtuSjfOXT2OQbi3dXk"
+    ],
   },
   openGraph: {
     type: "website",
