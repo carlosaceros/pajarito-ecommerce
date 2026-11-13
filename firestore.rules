@@ -2,36 +2,93 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Orders collection
+
+    // ── Quién es quién ──────────────────────────────────────────────────────────────────────────────
+    // `request.auth != null` ya no basta para todo: incluye a mensajeros y a la sesión de servicio. El rol sale del
+    // documento admin_users/{correo} (el mismo que usa /api/*); la cuenta raíz funciona aunque no tenga documento.
+    function correo() { return request.auth != null && request.auth.token.email != null ? request.auth.token.email.lower() : ''; }
+    function esRaiz() { return correo() == 'thinktic.thinktic@gmail.com'; }
+    function tienePerfil() { return correo() != '' && exists(/databases/$(database)/documents/admin_users/$(correo())); }
+    function perfil() { return get(/databases/$(database)/documents/admin_users/$(correo())).data; }
+    function rolActual() { return perfil().get('rol', perfil().get('role', '')); }
+    function esEquipo() { return esRaiz() || (tienePerfil() && perfil().get('estado', 'activo') != 'inactivo' && !(rolActual() in ['mensajero', 'user', 'despachos', ''])); }
+    function esDireccion() { return esRaiz() || (esEquipo() && rolActual() in ['superadmin', 'director']); }
+    function esServicio() { return request.auth != null && request.auth.token['service'] == true; }
+    function esSuperadmin() { return esRaiz() || (esEquipo() && rolActual() == 'superadmin'); }
+
+    // ── Pajarito: reglas mínimas ───────────────────────────────────────────────────────────────────
+    // Todo lo que no se nombra aquí está CERRADO (regla final). Las rutas de servidor usan el Admin SDK y no pasan por
+    // estas reglas. En el navegador solo trabaja el equipo (esEquipo): mensajeros, usuarios sin perfil y cualquiera que se
+    // registre con la clave pública de Firebase quedan fuera aunque tengan sesión.
+
+    // Usuarios del panel: el equipo lee; cada persona actualiza solo su presencia; dirección gestiona.
+    match /admin_users/{id} {
+      allow read: if esEquipo() || (correo() != '' && correo() == id);
+      allow create: if esDireccion();
+      allow update: if (esDireccion() && (esSuperadmin() || request.resource.data.get('rol', '') != 'superadmin'))
+        || (correo() != '' && correo() == id
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastLoginAt', 'lastActiveAt', 'currentSessionId', 'ultimoDispositivo', 'gpsConsentAcceptedAt']));
+      allow delete: if esSuperadmin();
+    }
+
+    // Bitácora: la escribe el equipo (o el servidor), la lee la dirección, nadie la edita ni la borra.
+    match /audit_logs/{id} {
+      allow read: if esDireccion();
+      allow create: if esEquipo();
+      allow update, delete: if false;
+    }
+
+    // Bandeja: los chats y sus mensajes los crea solo el servidor (webhook, /api/inbox/send, importación); el equipo lee y marca.
+    match /conversations/{conversationId} {
+      allow read, update: if esEquipo();
+      allow create, delete: if false;
+      match /messages/{messageId} {
+        allow read: if esEquipo();
+        allow create, update, delete: if false;
+      }
+    }
+
+    // ══ TIENDA (pajarito-ecommerce) ══ Las reglas de la tienda se conservan: el checkout escribe desde el navegador.
+    // Pedidos: cualquiera puede CREAR uno (checkout); leer, editar y borrar es solo del equipo (antes bastaba con tener
+    // cualquier sesión de Firebase: si alguien se registraba con la clave pública, veía todos los pedidos con datos personales).
     match /orders/{orderId} {
-      // Anyone can create orders (from checkout)
       allow create: if true;
-      
-      // Only authenticated admins can read, update, delete
-      allow read, update, delete: if request.auth != null;
+      allow read, update, delete: if esEquipo();
     }
-    
-    // Customers collection
-    match /customers/{customerId} {
-      // Security FIX: Prevent listing all customers (PII leak).
-      // Only allow getting a specific customer if the ID is known
-      allow get: if true;
-      allow list: if false;
-      allow create, update: if true;
-      allow delete: if request.auth != null;
-    }
-    
-    // Products collection (future)
+
+    // Productos: la tienda los lee sin sesión; solo el equipo los cambia.
     match /products/{productId} {
-      // Anyone can read products (for storefront)
       allow read: if true;
-      
-      // Only authenticated admins can write
-      allow write: if request.auth != null;
+      allow write: if esEquipo();
     }
-    
-    // Default: deny all other access
+
+    // Fichas de clientes (datos personales y notas internas): la MISMA ficha sirve a la tienda y al panel (id = celular de
+    // 10 dígitos). El checkout la actualiza desde el servidor (/api/clientes/desde-pedido en pajarito-ecommerce), así que el
+    // navegador de un cliente ya no puede leerla, crearla ni modificarla: solo el equipo.
+    match /customers/{customerId} {
+      allow read, create, update: if esEquipo();
+      allow delete: if esDireccion();
+    }
+
+    // Interruptores (agente, retención de medios…): el equipo los lee; los cambia la dirección.
+    match /bot_config/{id} {
+      allow read: if esEquipo();
+      allow write: if esDireccion();
+    }
+
+    // Alertas de WhatsApp (plantilla rechazada, calidad): las crea el webhook; el equipo las ve y las marca.
+    match /whatsapp_alerts/{alertId} {
+      allow read, update: if esEquipo();
+      allow create, delete: if false;
+    }
+
+    // Ventana de novedades del panel: la escribe el servidor.
+    match /admin_novedades/{id} {
+      allow read: if esEquipo();
+      allow write: if false;
+    }
+
+    // Cualquier otra colección: cerrada.
     match /{document=**} {
       allow read, write: if false;
     }
