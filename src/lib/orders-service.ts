@@ -13,7 +13,6 @@ import {
     arrayUnion
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { upsertCustomerFromOrder } from './customers-service';
 
 import { Order, OrderStatus, TimelineEvent } from '@/types/order';
 
@@ -51,10 +50,14 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'u
 
     const docRef = await addDoc(ordersCollection, order);
 
-    // Async update customer data (fire and forget to not block order flow)
-    upsertCustomerFromOrder(orderData.cliente, orderData.total).catch(err =>
-        console.error('Error updating customer data:', err)
-    );
+    // La ficha del cliente se actualiza en el SERVIDOR (las reglas de Firestore ya no dejan al navegador escribirla).
+    // Sin bloquear el flujo del pedido; keepalive para que sobreviva a la redirección a Wompi.
+    fetch('/api/clientes/desde-pedido', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: docRef.id }),
+        keepalive: true,
+    }).catch(err => console.error('Error updating customer data:', err));
 
     return docRef.id;
 }
